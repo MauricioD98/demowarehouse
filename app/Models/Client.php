@@ -8,6 +8,8 @@ class Client extends Model
 {
     protected $dates = ['deleted_at'];
 
+    protected $guarded = ['id'];
+
     protected $fillable = [
         'name', 'code', 'adresse', 'email', 'phone', 'country', 'city', 'tax_number',
         'is_royalty_eligible', 'points', 'opening_balance', 'credit_limit',

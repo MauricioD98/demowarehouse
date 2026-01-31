@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class PurchaseClientDetail extends Model
 {
+    protected $guarded = ['id'];
+
     protected $fillable = [
-        'id', 'purchase_client_id', 'quantity', 'sale_unit_id', 'product_id', 'product_variant_id', 'price', 'total',
+        'purchase_client_id', 'quantity', 'sale_unit_id', 'product_id', 'product_variant_id', 'price', 'total',
     ];
 
     protected $casts = [

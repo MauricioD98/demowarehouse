@@ -8,8 +8,8 @@
         <!-- Barcode Scanner Modal -->
         <b-modal hide-footer id="open_scan" size="md" :title="$t('Barcode_Scanner')">
           <qrcode-scanner
-            :qrbox="250" 
-            :fps="10" 
+            :qrbox="250"
+            :fps="10"
             style="width: 100%; height: calc(100vh - 56px);"
             @result="onScan"
           />
@@ -882,13 +882,13 @@
                 <div class="combo-search mb-3">
                   <b-form-group :label="$t('SearchProduct')">
                     <div class="autocomplete">
-                      <input  
+                      <input
                         :placeholder="$t('Scan_Search_Product_by_Code_Name')"
-                        @input='e => search_input = e.target.value' 
-                        @keyup="search(search_input)" 
+                        @input='e => search_input = e.target.value'
+                        @keyup="search(search_input)"
                         @focus="handleFocus"
-                        @blur="handleBlur" 
-                        ref="product_autocomplete" 
+                        @blur="handleBlur"
+                        ref="product_autocomplete"
                         class="autocomplete-input form-control"
                       />
                       <ul class="autocomplete-result-list" v-show="focused">
@@ -924,7 +924,7 @@
                         </td>
                         <td>
                           <b-input-group :append="materiel.unit_name">
-                            <b-form-input 
+                            <b-form-input
                               v-model.number="materiel.quantity"
                               min="1"
                               size="sm"
@@ -1159,7 +1159,7 @@ export default {
       timer:null,
       search_input:'',
       product_filter:[],
-      warehouses: [],   
+      warehouses: [],
       tag: "",
       len: 8,
       change: false,
@@ -1226,7 +1226,7 @@ export default {
         is_active: true,
         is_featured: false,
         hide_from_online_store: false,
-        warranty_period: null,
+        warranty_period: 0,
         warranty_unit: 'months',
         warranty_terms: '',
         has_guarantee: false,
@@ -1266,7 +1266,7 @@ export default {
       return `${value[0]}.${formated}`;
     },
 
-    
+
       //---------------------- Event Selected_product_type------------------------------\\
       Selected_Type_Product(value) {
 
@@ -1465,12 +1465,12 @@ export default {
         operator_value: 1
       };
       this.show_operator_quick = false;
-      
+
       // Ensure units_base is loaded
       if (!this.units_base || this.units_base.length === 0) {
         this.loadBaseUnits();
       }
-      
+
       this.$bvModal.show("Quick_Add_Unit");
     },
 
@@ -1511,7 +1511,7 @@ export default {
         try {
           // Set base_unit to empty string if null
           const base_unit = this.quickUnit.base_unit || "";
-          
+
           const payload = {
             name: this.quickUnit.name,
             ShortName: this.quickUnit.ShortName,
@@ -1521,18 +1521,18 @@ export default {
           };
 
           await axios.post("units", payload);
-          
+
           // Refresh units list and find the newly created unit
           await this.refreshUnits();
-          
+
           // Use $nextTick to ensure the units list is updated
           await this.$nextTick();
-          
+
           // Try to find the newly created unit (with a small retry in case of timing issues)
           let match = this.units.find(
             u => u.name === payload.name && u.ShortName === payload.ShortName
           );
-          
+
           // If not found immediately, wait a bit and try again
           if (!match) {
             await new Promise(resolve => setTimeout(resolve, 300));
@@ -1542,7 +1542,7 @@ export default {
               u => u.name === payload.name && u.ShortName === payload.ShortName
             );
           }
-          
+
           if (match) {
             this.product.unit_id = match.id;
             // Trigger Selected_Unit to load sub-units
@@ -1583,7 +1583,7 @@ export default {
       } catch (e) {
         // silent refresh failure
       }
-      
+
       // Also refresh base units
       this.loadBaseUnits();
     },
@@ -1608,7 +1608,7 @@ export default {
           this.materiels.some(detail => detail.code === result.code)
       ) {
           toastr.error('Product_Already_added');
-          
+
       } else {
 
           var materiel_tag = {
@@ -1620,7 +1620,7 @@ export default {
               quantity:1,
           }
           this.materiels.push(materiel_tag);
-          
+
       }
       this.search_input= '';
       this.$refs.product_autocomplete.value = "";
@@ -1641,7 +1641,7 @@ export default {
 
     showModal() {
       this.$bvModal.show('open_scan');
-      
+
     },
 
     onScan (decodedText, decodedResult) {
@@ -1683,7 +1683,7 @@ export default {
       });
     },
 
-    
+
 
     add_variant(tag) {
       if (
@@ -1710,13 +1710,13 @@ export default {
               "Please Enter the Variant",
               this.$t("Warning")
             );
-            
+
           }
       }
     },
     //-----------------------------------Delete variant------------------------------\\
     delete_variant(var_id) {
-      
+
       for (var i = 0; i < this.variants.length; i++) {
         if (var_id === this.variants[i].var_id) {
           this.variants.splice(i, 1);
@@ -1836,7 +1836,7 @@ export default {
         self.data.append("materiels", JSON.stringify(self.materiels));
       }
 
-           
+
       // append objet product
       Object.entries(self.product).forEach(([key, value]) => {
           self.data.append(key, value);
@@ -1854,7 +1854,7 @@ export default {
           JSON.stringify(self.product.warehouses)
         );
       }
-   
+
       // Send Data with axios
       axios
         .post("products", self.data)

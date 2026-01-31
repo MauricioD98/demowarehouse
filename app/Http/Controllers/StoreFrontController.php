@@ -67,7 +67,7 @@ class StoreFrontController extends Controller
         $baseExpr = 'COALESCE(pvmin.min_variant_price, products.price)';
 
         // discount_method: '1' => percent, '2' => fixed
-        $discValExpr = 'IFNULL(products.discount, 0)';
+        $discValExpr = 'COALESCE(products.discount, 0)';
         $afterDiscountExpr = "GREATEST(0,
             CASE
                 WHEN products.discount_method = '1' THEN $baseExpr - ($baseExpr * ($discValExpr/100))
@@ -247,7 +247,7 @@ class StoreFrontController extends Controller
         $baseExpr = 'COALESCE(pvmin.min_variant_price, products.price)';
 
         // discount_method: '1'=percent, '2'=fixed (varchar)
-        $discValExpr = 'IFNULL(products.discount, 0)';
+        $discValExpr = 'COALESCE(products.discount, 0)';
         $afterDiscountExpr = "GREATEST(0,
             CASE
                 WHEN products.discount_method = '1' THEN $baseExpr - ($baseExpr * ($discValExpr/100))

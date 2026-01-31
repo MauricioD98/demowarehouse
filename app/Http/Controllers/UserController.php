@@ -107,7 +107,7 @@ class UserController extends BaseController
             'dark_mode' => (bool) ($settings->dark_mode ?? false),
         ];
 
-        $permissions = $user->roles()->first()?->permissions->pluck('name') ?? [];
+        $permissions = $user->getEffectiveRoles()->first()?->permissions->pluck('name') ?? collect();
 
         $productsAlerts = product_warehouse::join('products', 'product_warehouse.product_id', '=', 'products.id')
             ->whereRaw('qte <= stock_alert')
@@ -127,7 +127,7 @@ class UserController extends BaseController
     public function GetUserRole(Request $request)
     {
 
-        $roles = Auth::user()->roles()->with('permissions')->first();
+        $roles = Auth::user()->getEffectiveRoles()->first();
 
         $data = [];
         if ($roles) {
@@ -307,10 +307,8 @@ class UserController extends BaseController
 
             ]);
 
-            role_user::where('user_id', $id)->update([
-                'user_id' => $id,
-                'role_id' => $request['role'],
-            ]);
+            // Sync role_user so the user always has exactly one role in the pivot (required for policies)
+            User::findOrFail($id)->roles()->sync([$request['role']]);
 
             $user_saved = User::where('deleted_at', '=', null)->findOrFail($id);
             $user_saved->assignedWarehouses()->sync($request['assigned_to']);
@@ -455,7 +453,7 @@ class UserController extends BaseController
 
     public function GetPermissions()
     {
-        $roles = Auth::user()->roles()->with('permissions')->first();
+        $roles = Auth::user()->getEffectiveRoles()->first();
         $data = [];
         if ($roles) {
             foreach ($roles->permissions as $permission) {

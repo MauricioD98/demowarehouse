@@ -10,8 +10,10 @@ class Transfer extends Model
 
     protected $dates = ['deleted_at'];
 
+    protected $guarded = ['id'];
+
     protected $fillable = [
-        'id', 'date', 'user_id', 'from_warehouse_id', 'to_warehouse_id', 'time',
+        'date', 'user_id', 'from_warehouse_id', 'to_warehouse_id', 'time',
         'items', 'statut', 'approval_status', 'notes', 'GrandTotal', 'discount', 'shipping', 'TaxNet', 'tax_rate',
         'created_at', 'updated_at', 'deleted_at',
     ];

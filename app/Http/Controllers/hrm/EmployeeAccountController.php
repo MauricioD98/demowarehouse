@@ -21,13 +21,15 @@ class EmployeeAccountController extends Controller
     {
         $this->authorizeForUser($request->user('api'), 'create', Employee::class);
 
-        $this->validate($request, [
+        $validated = $request->validate([
             'bank_name' => 'required|string|max:255',
             'bank_branch' => 'required|string|max:255',
             'account_no' => 'required|string|max:255',
+            'employee_id' => 'required|integer|exists:employees,id',
+            'note' => 'nullable|string|max:500',
         ]);
 
-        EmployeeAccount::create($request->all());
+        EmployeeAccount::create($validated);
 
         return response()->json(['success' => true]);
     }
@@ -46,13 +48,14 @@ class EmployeeAccountController extends Controller
     {
         $this->authorizeForUser($request->user('api'), 'update', Employee::class);
 
-        $this->validate($request, [
+        $validated = $request->validate([
             'bank_name' => 'required|string|max:255',
             'bank_branch' => 'required|string|max:255',
             'account_no' => 'required|string|max:255',
+            'note' => 'nullable|string|max:500',
         ]);
 
-        EmployeeAccount::whereId($id)->update($request->all());
+        EmployeeAccount::whereId($id)->update($validated);
 
         return response()->json(['success' => true]);
     }

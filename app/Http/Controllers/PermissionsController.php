@@ -70,14 +70,15 @@ class PermissionsController extends BaseController
 
                 $role = Role::findOrFail($Role->id);
                 $role->permissions()->detach();
-                $permissions = $request->permissions;
-
+                $permissions = $request->permissions ?? [];
+                $data = [];
                 foreach ($permissions as $permission_slug) {
                     $perm = Permission::firstOrCreate(['name' => $permission_slug]);
                     $data[] = $perm->id;
                 }
-
-                $role->permissions()->attach($data);
+                if (!empty($data)) {
+                    $role->permissions()->attach($data);
+                }
 
             }, 10);
 
@@ -119,16 +120,15 @@ class PermissionsController extends BaseController
 
                 $role = Role::findOrFail($id);
                 $role->permissions()->detach();
-                $permissions = $request->permissions;
-
+                $permissions = $request->permissions ?? [];
+                $data = [];
                 foreach ($permissions as $permission_slug) {
-
-                    // get the permission object by name
                     $perm = Permission::firstOrCreate(['name' => $permission_slug]);
                     $data[] = $perm->id;
                 }
-
-                $role->permissions()->attach($data);
+                if (!empty($data)) {
+                    $role->permissions()->attach($data);
+                }
 
             }, 10);
 

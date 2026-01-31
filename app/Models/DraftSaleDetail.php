@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class DraftSaleDetail extends Model
 {
+    protected $guarded = ['id'];
+
     protected $fillable = [
-        'id', 'date', 'draft_sale_id', 'sale_unit_id', 'quantity', 'product_id', 'total', 'product_variant_id',
+        'date', 'draft_sale_id', 'sale_unit_id', 'quantity', 'product_id', 'total', 'product_variant_id',
         'price', 'TaxNet', 'discount', 'discount_method', 'tax_method', 'price_type',
     ];
 

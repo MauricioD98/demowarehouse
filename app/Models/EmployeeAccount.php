@@ -11,6 +11,8 @@ class EmployeeAccount extends Model
 
     protected $dates = ['deleted_at'];
 
+    protected $guarded = ['id'];
+
     protected $fillable = [
         'employee_id', 'bank_name', 'bank_branch', 'account_no', 'note',
 

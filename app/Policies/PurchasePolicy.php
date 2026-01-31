@@ -30,7 +30,7 @@ class PurchasePolicy
     {
         $permission = Permission::where('name', 'Purchases_view')->first();
 
-        return $user->hasRole($permission->roles);
+        return $permission && $user->hasRole($permission->roles);
     }
 
     /**
@@ -42,7 +42,7 @@ class PurchasePolicy
     {
         $permission = Permission::where('name', 'Purchases_add')->first();
 
-        return $user->hasRole($permission->roles);
+        return $permission && $user->hasRole($permission->roles);
     }
 
     /**
@@ -55,7 +55,7 @@ class PurchasePolicy
     {
         $permission = Permission::where('name', 'Purchases_edit')->first();
 
-        return $user->hasRole($permission->roles);
+        return $permission && $user->hasRole($permission->roles);
     }
 
     /**
@@ -68,14 +68,14 @@ class PurchasePolicy
     {
         $permission = Permission::where('name', 'Purchases_delete')->first();
 
-        return $user->hasRole($permission->roles);
+        return $permission && $user->hasRole($permission->roles);
     }
 
     public function ReportPurchases(User $user)
     {
         $permission = Permission::where('name', 'Reports_purchase')->first();
 
-        return $user->hasRole($permission->roles);
+        return $permission && $user->hasRole($permission->roles);
     }
 
     public function check_record(User $user, $purchase)
@@ -87,7 +87,7 @@ class PurchasePolicy
     {
         $permission = Permission::where('name', 'product_purchases_report')->first();
 
-        return $user->hasRole($permission->roles);
+        return $permission && $user->hasRole($permission->roles);
     }
 
     /**

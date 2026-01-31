@@ -12,6 +12,8 @@ class EcommerceClient extends Model implements Authenticatable
 
     protected $dates = ['deleted_at'];
 
+    protected $guarded = ['id'];
+
     protected $fillable = [
         'client_id', 'username', 'email', 'status', 'password',
 

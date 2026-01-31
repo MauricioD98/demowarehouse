@@ -50,7 +50,24 @@ class User extends Authenticatable
 
     public function roles()
     {
-        return $this->belongsToMany(Role::class);
+        return $this->belongsToMany(Role::class, 'role_user');
+    }
+
+    /**
+     * Get the roles for this user. If role_user pivot is empty but user has role_id (legacy),
+     * sync pivot from role_id and return roles so permission checks work.
+     */
+    public function getEffectiveRoles()
+    {
+        $roles = $this->roles;
+        if ($roles->isEmpty() && $this->role_id) {
+            $role = Role::find($this->role_id);
+            if ($role) {
+                $this->roles()->sync([$this->role_id]);
+                return $this->roles()->get();
+            }
+        }
+        return $roles;
     }
 
     public function assignRole(Role $role)
@@ -60,11 +77,12 @@ class User extends Authenticatable
 
     public function hasRole($role)
     {
+        $roles = $this->getEffectiveRoles();
         if (is_string($role)) {
-            return $this->roles->contains('name', $role);
+            return $roles->contains('name', $role);
         }
 
-        return (bool) $role->intersect($this->roles)->count();
+        return (bool) $role->intersect($roles)->count();
     }
 
     public function assignedWarehouses()
@@ -85,12 +103,12 @@ class User extends Authenticatable
             return (bool) $this->record_view;
         } else {
             // Fallback to role permission check for backward compatibility
-            $role = $this->roles()->first();
+            $role = $this->getEffectiveRoles()->first();
             if ($role) {
                 return $role->inRole('record_view');
             }
         }
-        
+
         return false;
     }
 }

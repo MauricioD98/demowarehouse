@@ -1521,7 +1521,7 @@ class ReportController extends BaseController
             ->select(
                 DB::raw('count(DISTINCT products.id) as value'),
                 DB::raw('warehouses.name as name'),
-                DB::raw('(IFNULL(SUM(qte),0)) AS value1'),
+                DB::raw('(COALESCE(SUM(qte),0)) AS value1'),
             )
             ->where('qte', '>', 0)
             ->groupBy('warehouses.name')
@@ -5429,7 +5429,7 @@ class ReportController extends BaseController
         $salesAgg = DB::table('sales')
             ->select([
                 'client_id',
-                DB::raw('MAX(CONCAT(date, " ", IFNULL(time,"00:00:00"))) AS last_sale_dt'),
+                DB::raw("MAX(CONCAT(date, ' ', COALESCE(time,'00:00:00'))) AS last_sale_dt"),
                 DB::raw('COUNT(*) AS sales_count'),
             ])
             ->whereNull('deleted_at')
@@ -5461,7 +5461,7 @@ class ReportController extends BaseController
 
         // ---- Sorting (support computed column) ----
         $sortableComputed = [
-            'days_inactive' => 'COALESCE(TIMESTAMPDIFF(DAY, s.last_sale_dt, NOW()), 99999)',
+            'days_inactive' => 'COALESCE('.$this->sqlDaysDiff('s.last_sale_dt').', 99999)',
             'last_sale_at' => 's.last_sale_dt',
         ];
 
@@ -5546,7 +5546,7 @@ class ReportController extends BaseController
             ->whereNull('s.deleted_at')
             ->where('s.statut', 'completed')
             ->when($warehouseId, fn ($q) => $q->where('s.warehouse_id', $warehouseId))
-            ->when($cutoff, fn ($q) => $q->whereRaw('CONCAT(s.date, " ", IFNULL(s.time, "00:00:00")) >= ?', [$cutoff]))
+            ->when($cutoff, fn ($q) => $q->whereRaw("CONCAT(s.date, ' ', COALESCE(s.time, '00:00:00')) >= ?", [$cutoff]))
             ->groupBy('sd.product_id')
             ->select([
                 'sd.product_id',
@@ -5562,7 +5562,7 @@ class ReportController extends BaseController
             ->groupBy('sd2.product_id')
             ->select([
                 'sd2.product_id',
-                DB::raw('MAX(CONCAT(s2.date, " ", IFNULL(s2.time, "00:00:00"))) as last_sale_dt'),
+                DB::raw("MAX(CONCAT(s2.date, ' ', COALESCE(s2.time, '00:00:00'))) as last_sale_dt"),
             ]);
 
         $base = Product::query()
@@ -5592,7 +5592,7 @@ class ReportController extends BaseController
         // Sorting (support computed)
         $sortableComputed = [
             'last_sale_at' => 'l.last_sale_dt',
-            'days_since_last_sale' => 'COALESCE(TIMESTAMPDIFF(DAY, l.last_sale_dt, NOW()), 99999)',
+            'days_since_last_sale' => 'COALESCE('.$this->sqlDaysDiff('l.last_sale_dt').', 99999)',
             'period_qty' => 'COALESCE(p.period_qty, 0)',
         ];
 
@@ -5673,17 +5673,17 @@ class ReportController extends BaseController
             ->whereNull('h.deleted_at')
             ->where('h.statut', 'completed')
             ->when($warehouseId, fn ($q) => $q->where('h.warehouse_id', $warehouseId))
-            ->whereRaw('CONCAT(h.date," ",IFNULL(h.time,"00:00:00")) >= ?', [$cutoff])
+            ->whereRaw('CONCAT(h.date," ",COALESCE(h.time,"00:00:00")) >= ?', [$cutoff])
             ->groupBy('d.product_id')
-            ->select('d.product_id', DB::raw('MAX(CONCAT(h.date," ",IFNULL(h.time,"00:00:00"))) as last_dt'));
+            ->select('d.product_id', DB::raw('MAX(CONCAT(h.date," ",COALESCE(h.time,"00:00:00"))) as last_dt'));
 
         $purchaseWithin = DB::table('purchase_details as d')
             ->join('purchases as h', 'h.id', '=', 'd.purchase_id')
             ->whereNull('h.deleted_at')
             ->when($warehouseId, fn ($q) => $q->where('h.warehouse_id', $warehouseId))
-            ->whereRaw('COALESCE(CONCAT(h.date," ",IFNULL(h.time,"00:00:00")), h.created_at) >= ?', [$cutoff])
+            ->whereRaw('COALESCE(CONCAT(h.date," ",COALESCE(h.time,"00:00:00")), h.created_at) >= ?', [$cutoff])
             ->groupBy('d.product_id')
-            ->select('d.product_id', DB::raw('MAX(COALESCE(CONCAT(h.date," ",IFNULL(h.time,"00:00:00")), h.created_at)) as last_dt'));
+            ->select('d.product_id', DB::raw('MAX(COALESCE(CONCAT(h.date," ",COALESCE(h.time,"00:00:00")), h.created_at)) as last_dt'));
 
         $transferWithin = DB::table('transfer_details as d')
             ->join('transfers as h', 'h.id', '=', 'd.transfer_id')
@@ -5694,30 +5694,30 @@ class ReportController extends BaseController
                         ->orWhere('h.to_warehouse_id', $warehouseId);
                 });
             })
-            ->whereRaw('COALESCE(CONCAT(h.date," ",IFNULL(h.time,"00:00:00")), h.created_at) >= ?', [$cutoff])
+            ->whereRaw('COALESCE(CONCAT(h.date," ",COALESCE(h.time,"00:00:00")), h.created_at) >= ?', [$cutoff])
             ->groupBy('d.product_id')
-            ->select('d.product_id', DB::raw('MAX(COALESCE(CONCAT(h.date," ",IFNULL(h.time,"00:00:00")), h.created_at)) as last_dt'));
+            ->select('d.product_id', DB::raw('MAX(COALESCE(CONCAT(h.date," ",COALESCE(h.time,"00:00:00")), h.created_at)) as last_dt'));
 
         $adjustWithin = DB::table('adjustment_details as d')
             ->join('adjustments as h', 'h.id', '=', 'd.adjustment_id')
             ->whereNull('h.deleted_at')
             ->when($warehouseId, fn ($q) => $q->where('h.warehouse_id', $warehouseId))
-            ->whereRaw('COALESCE(CONCAT(h.date," ",IFNULL(h.time,"00:00:00")), h.created_at) >= ?', [$cutoff])
+            ->whereRaw('COALESCE(CONCAT(h.date," ",COALESCE(h.time,"00:00:00")), h.created_at) >= ?', [$cutoff])
             ->groupBy('d.product_id')
-            ->select('d.product_id', DB::raw('MAX(COALESCE(CONCAT(h.date," ",IFNULL(h.time,"00:00:00")), h.created_at)) as last_dt'));
+            ->select('d.product_id', DB::raw('MAX(COALESCE(CONCAT(h.date," ",COALESCE(h.time,"00:00:00")), h.created_at)) as last_dt'));
 
         // ---------------- Lifetime LAST movement (all-time, product-level) ----------------
         $saleAll = DB::table('sale_details as d')->join('sales as h', 'h.id', '=', 'd.sale_id')
             ->whereNull('h.deleted_at')->where('h.statut', 'completed')
             ->when($warehouseId, fn ($q) => $q->where('h.warehouse_id', $warehouseId))
             ->groupBy('d.product_id')
-            ->select('d.product_id', DB::raw('MAX(CONCAT(h.date," ",IFNULL(h.time,"00:00:00"))) as last_dt'));
+            ->select('d.product_id', DB::raw('MAX(CONCAT(h.date," ",COALESCE(h.time,"00:00:00"))) as last_dt'));
 
         $purchaseAll = DB::table('purchase_details as d')->join('purchases as h', 'h.id', '=', 'd.purchase_id')
             ->whereNull('h.deleted_at')
             ->when($warehouseId, fn ($q) => $q->where('h.warehouse_id', $warehouseId))
             ->groupBy('d.product_id')
-            ->select('d.product_id', DB::raw('MAX(COALESCE(CONCAT(h.date," ",IFNULL(h.time,"00:00:00")), h.created_at)) as last_dt'));
+            ->select('d.product_id', DB::raw('MAX(COALESCE(CONCAT(h.date," ",COALESCE(h.time,"00:00:00")), h.created_at)) as last_dt'));
 
         $transferAll = DB::table('transfer_details as d')->join('transfers as h', 'h.id', '=', 'd.transfer_id')
             ->whereNull('h.deleted_at')
@@ -5728,13 +5728,13 @@ class ReportController extends BaseController
                 });
             })
             ->groupBy('d.product_id')
-            ->select('d.product_id', DB::raw('MAX(COALESCE(CONCAT(h.date," ",IFNULL(h.time,"00:00:00")), h.created_at)) as last_dt'));
+            ->select('d.product_id', DB::raw('MAX(COALESCE(CONCAT(h.date," ",COALESCE(h.time,"00:00:00")), h.created_at)) as last_dt'));
 
         $adjustAll = DB::table('adjustment_details as d')->join('adjustments as h', 'h.id', '=', 'd.adjustment_id')
             ->whereNull('h.deleted_at')
             ->when($warehouseId, fn ($q) => $q->where('h.warehouse_id', $warehouseId))
             ->groupBy('d.product_id')
-            ->select('d.product_id', DB::raw('MAX(COALESCE(CONCAT(h.date," ",IFNULL(h.time,"00:00:00")), h.created_at)) as last_dt'));
+            ->select('d.product_id', DB::raw('MAX(COALESCE(CONCAT(h.date," ",COALESCE(h.time,"00:00:00")), h.created_at)) as last_dt'));
 
         // ---------------- BASE (product-level only) ----------------
         $base = DB::table('products as pr')
@@ -5774,10 +5774,10 @@ class ReportController extends BaseController
             DB::raw('NULL as variant_name'),
             DB::raw('COALESCE(SUM(pwh.qte),0) as on_hand'),
             DB::raw('GREATEST(
-                IFNULL(sa.last_dt,"0000-01-01 00:00:00"),
-                IFNULL(pa.last_dt,"0000-01-01 00:00:00"),
-                IFNULL(ta.last_dt,"0000-01-01 00:00:00"),
-                IFNULL(aa.last_dt,"0000-01-01 00:00:00")
+                COALESCE(sa.last_dt,"0000-01-01 00:00:00"),
+                COALESCE(pa.last_dt,"0000-01-01 00:00:00"),
+                COALESCE(ta.last_dt,"0000-01-01 00:00:00"),
+                COALESCE(aa.last_dt,"0000-01-01 00:00:00")
             ) as last_movement_dt'),
         ];
 
@@ -5792,12 +5792,12 @@ class ReportController extends BaseController
         $rowsQ = (clone $base)->select($select);
         if ($order === 'days_since_last_movement') {
             $rowsQ->orderByRaw(
-                ' (CASE WHEN last_movement_dt = "0000-01-01 00:00:00" THEN 99999 ELSE TIMESTAMPDIFF(DAY, last_movement_dt, NOW()) END) '.
+                ' (CASE WHEN last_movement_dt = \'0000-01-01 00:00:00\' THEN 99999 ELSE '.$this->sqlDaysDiff('last_movement_dt').' END) '.
                 ($dir === 'asc' ? 'ASC' : 'DESC')
             );
         } elseif ($order === 'last_movement_dt' || $order === 'last_movement_at') {
             $rowsQ->orderByRaw(
-                ' (last_movement_dt = "0000-01-01 00:00:00") DESC, last_movement_dt '.
+                " (last_movement_dt = '0000-01-01 00:00:00') DESC, last_movement_dt ".
                 ($dir === 'asc' ? 'ASC' : 'DESC')
             );
         } else {
@@ -5993,7 +5993,7 @@ class ReportController extends BaseController
         }
 
         // Date expr (handles optional time)
-        $dateExpr = "COALESCE(CONCAT(s.date,' ',IFNULL(s.time,'00:00:00')), s.created_at)";
+        $dateExpr = "COALESCE(CONCAT(s.date,' ',COALESCE(s.time,'00:00:00')), s.created_at)";
         $between = [$start->toDateTimeString(), $end->toDateTimeString()];
 
         // ---- LINE discount value on each detail row ----
@@ -6178,7 +6178,7 @@ class ReportController extends BaseController
             $order = 'date_time';
         }
 
-        $dateExpr = "COALESCE(CONCAT(s.date,' ',IFNULL(s.time,'00:00:00')), s.created_at)";
+        $dateExpr = "COALESCE(CONCAT(s.date,' ',COALESCE(s.time,'00:00:00')), s.created_at)";
         $dExpr = 'DATE(COALESCE(s.date, DATE(s.created_at)))';
         $between = [$start->toDateTimeString(), $end->toDateTimeString()];
 
@@ -6303,7 +6303,7 @@ class ReportController extends BaseController
         }
 
         // Use created_at OR date/time on sales
-        $dateExpr = "COALESCE(CONCAT(s.date,' ',IFNULL(s.time,'00:00:00')), s.created_at)";
+        $dateExpr = "COALESCE(CONCAT(s.date,' ',COALESCE(s.time,'00:00:00')), s.created_at)";
         $between = [$start->toDateTimeString(), $end->toDateTimeString()];
 
         // Base completed sales in range, grouped by client
@@ -6407,7 +6407,7 @@ class ReportController extends BaseController
                 ->when($warehouseId, fn ($q) => $q->where('h.warehouse_id', $warehouseId))
                 ->groupBy($groupCols)
                 ->select(array_merge($groupCols, [
-                    DB::raw("MAX(COALESCE(TIMESTAMP(h.`date`, IFNULL(h.`time`,'00:00:00')), h.`created_at`)) as in_dt"),
+                    DB::raw("MAX(COALESCE(CONCAT(h.date, ' ', COALESCE(h.time,'00:00:00')), h.created_at)) as in_dt"),
                 ]));
         };
 
@@ -6418,7 +6418,7 @@ class ReportController extends BaseController
                 ->when($warehouseId, fn ($q) => $q->where('h.to_warehouse_id', $warehouseId))
                 ->groupBy($groupCols)
                 ->select(array_merge($groupCols, [
-                    DB::raw("MAX(COALESCE(TIMESTAMP(h.`date`, IFNULL(h.`time`,'00:00:00')), h.`created_at`)) as in_dt"),
+                    DB::raw("MAX(COALESCE(CONCAT(h.date, ' ', COALESCE(h.time,'00:00:00')), h.created_at)) as in_dt"),
                 ]));
         };
 
@@ -6433,7 +6433,7 @@ class ReportController extends BaseController
                 })
                 ->groupBy($groupCols)
                 ->select(array_merge($groupCols, [
-                    DB::raw("MAX(COALESCE(TIMESTAMP(h.`date`, IFNULL(h.`time`,'00:00:00')), h.`created_at`)) as in_dt"),
+                    DB::raw("MAX(COALESCE(CONCAT(h.date, ' ', COALESCE(h.time,'00:00:00')), h.created_at)) as in_dt"),
                 ]));
         };
 
@@ -6491,9 +6491,9 @@ class ReportController extends BaseController
                 'pv.name as variant_name',
                 DB::raw('COALESCE(SUM(pwh.qte),0) as on_hand'),
                 DB::raw("GREATEST(
-                    IFNULL(pi.in_dt,'1970-01-01 00:00:00'),
-                    IFNULL(ti.in_dt,'1970-01-01 00:00:00'),
-                    IFNULL(ai.in_dt,'1970-01-01 00:00:00')
+                    COALESCE(pi.in_dt,'1970-01-01 00:00:00'),
+                    COALESCE(ti.in_dt,'1970-01-01 00:00:00'),
+                    COALESCE(ai.in_dt,'1970-01-01 00:00:00')
                 ) as last_inbound_dt"),
             ])->groupBy('pr.id', 'pv.id');
 
@@ -6507,7 +6507,7 @@ class ReportController extends BaseController
                 ->groupBy('product_id')
                 ->select([
                     'product_id',
-                    DB::raw("MAX(COALESCE(TIMESTAMP(h.`date`, IFNULL(h.`time`,'00:00:00')), h.`created_at`)) as in_dt"),
+                    DB::raw("MAX(COALESCE(CONCAT(h.date, ' ', COALESCE(h.time,'00:00:00')), h.created_at)) as in_dt"),
                 ]);
 
             $ti = DB::table('transfer_details as d')
@@ -6517,7 +6517,7 @@ class ReportController extends BaseController
                 ->groupBy('product_id')
                 ->select([
                     'product_id',
-                    DB::raw("MAX(COALESCE(TIMESTAMP(h.`date`, IFNULL(h.`time`,'00:00:00')), h.`created_at`)) as in_dt"),
+                    DB::raw("MAX(COALESCE(CONCAT(h.date, ' ', COALESCE(h.time,'00:00:00')), h.created_at)) as in_dt"),
                 ]);
 
             $ai = DB::table('adjustment_details as d')
@@ -6531,7 +6531,7 @@ class ReportController extends BaseController
                 ->groupBy('product_id')
                 ->select([
                     'product_id',
-                    DB::raw("MAX(COALESCE(TIMESTAMP(h.`date`, IFNULL(h.`time`,'00:00:00')), h.`created_at`)) as in_dt"),
+                    DB::raw("MAX(COALESCE(CONCAT(h.date, ' ', COALESCE(h.time,'00:00:00')), h.created_at)) as in_dt"),
                 ]);
 
             $base = DB::table('products as pr')
@@ -6571,9 +6571,9 @@ class ReportController extends BaseController
                 DB::raw('NULL as variant_name'),
                 DB::raw('COALESCE(SUM(pwh.qte),0) as on_hand'),
                 DB::raw("GREATEST(
-                    IFNULL(pi.in_dt,'1970-01-01 00:00:00'),
-                    IFNULL(ti.in_dt,'1970-01-01 00:00:00'),
-                    IFNULL(ai.in_dt,'1970-01-01 00:00:00')
+                    COALESCE(pi.in_dt,'1970-01-01 00:00:00'),
+                    COALESCE(ti.in_dt,'1970-01-01 00:00:00'),
+                    COALESCE(ai.in_dt,'1970-01-01 00:00:00')
                 ) as last_inbound_dt"),
             ])->groupBy('pr.id');
         }
@@ -6583,7 +6583,7 @@ class ReportController extends BaseController
             $rowsQ->orderByRaw(
                 " (CASE WHEN last_inbound_dt = '1970-01-01 00:00:00'
                         THEN 99999
-                        ELSE TIMESTAMPDIFF(DAY, last_inbound_dt, NOW())
+                        ELSE ".$this->sqlDaysDiff('last_inbound_dt')."
                 END) ".($dir === 'asc' ? 'ASC' : 'DESC')
             );
         } elseif ($order === 'last_inbound_dt') {
@@ -6713,7 +6713,7 @@ class ReportController extends BaseController
         $base = TransferDetail::from('transfer_details as d')
             ->join('transfers as t', 't.id', '=', 'd.transfer_id')
             ->whereNull('t.deleted_at')
-            ->whereBetween(DB::raw('COALESCE(CONCAT(t.date," ",IFNULL(t.time,"00:00:00")), t.created_at)'), [$start, $end])
+            ->whereBetween(DB::raw('COALESCE(CONCAT(t.date," ",COALESCE(t.time,"00:00:00")), t.created_at)'), [$start, $end])
             ->when($statut, fn ($q) => $q->where('t.statut', $statut))
             ->when($fromWarehouseId, fn ($q) => $q->where('t.from_warehouse_id', $fromWarehouseId))
             ->when($toWarehouseId, fn ($q) => $q->where('t.to_warehouse_id', $toWarehouseId))
@@ -6762,7 +6762,7 @@ class ReportController extends BaseController
             ->leftJoin('warehouses as wf', 'wf.id', '=', 't.from_warehouse_id')
             ->leftJoin('warehouses as wt', 'wt.id', '=', 't.to_warehouse_id')
             ->selectRaw('t.id as transfer_id')
-            ->selectRaw('COALESCE(CONCAT(t.date," ",IFNULL(t.time,"00:00:00")), t.created_at) as dt')
+            ->selectRaw('COALESCE(CONCAT(t.date," ",COALESCE(t.time,"00:00:00")), t.created_at) as dt')
             ->selectRaw('wf.name as from_wh, wt.name as to_wh')
             ->selectRaw('COALESCE(SUM(d.quantity),0) as qty')
             ->selectRaw('COALESCE(SUM(d.total),0) as val')
@@ -6841,7 +6841,7 @@ class ReportController extends BaseController
             ->join('adjustments as a', 'a.id', '=', 'd.adjustment_id')
             ->whereNull('a.deleted_at')
             ->whereBetween(
-                DB::raw("COALESCE(CONCAT(a.date,' ',IFNULL(a.time,'00:00:00')), a.created_at)"),
+                DB::raw("COALESCE(CONCAT(a.date,' ',COALESCE(a.time,'00:00:00')), a.created_at)"),
                 [$start->toDateTimeString(), $end->toDateTimeString()]
             )
             ->when($warehouseId, fn ($q) => $q->where('a.warehouse_id', $warehouseId))
@@ -6884,7 +6884,7 @@ class ReportController extends BaseController
         $tableBase = (clone $base)
             ->leftJoin('warehouses as w', 'w.id', '=', 'a.warehouse_id')
             ->selectRaw('a.id as adj_id, a.Ref as ref')
-            ->selectRaw('COALESCE(CONCAT(a.date," ",IFNULL(a.time,"00:00:00")), a.created_at) as dt')
+            ->selectRaw('COALESCE(CONCAT(a.date," ",COALESCE(a.time,"00:00:00")), a.created_at) as dt')
             ->selectRaw('w.name as warehouse')
             ->selectRaw('SUM(d.quantity) as qty')
             ->selectRaw('SUM(CASE WHEN d.type="add" THEN d.quantity ELSE -d.quantity END) as net_qty')
@@ -6953,7 +6953,7 @@ class ReportController extends BaseController
         $hdr = DB::table('purchases as h')
             ->whereNull('h.deleted_at')
             ->where('h.statut', 'received')
-            ->whereBetween(DB::raw("COALESCE(CONCAT(h.date,' ',IFNULL(h.time,'00:00:00')), h.created_at)"), [$start->toDateTimeString(), $end->toDateTimeString()])
+            ->whereBetween(DB::raw("COALESCE(CONCAT(h.date,' ',COALESCE(h.time,'00:00:00')), h.created_at)"), [$start->toDateTimeString(), $end->toDateTimeString()])
             ->when($warehouseId, fn ($q) => $q->where('h.warehouse_id', $warehouseId))
             ->when(! $warehouseId, fn ($q) => $q->whereIn('h.warehouse_id', $array_warehouses_id));
 
@@ -6967,7 +6967,7 @@ class ReportController extends BaseController
             ->join('purchases as h', 'h.id', '=', 'd.purchase_id')
             ->whereNull('h.deleted_at')
             ->where('h.statut', 'received')
-            ->whereBetween(DB::raw("COALESCE(CONCAT(h.date,' ',IFNULL(h.time,'00:00:00')), h.created_at)"), [$start->toDateTimeString(), $end->toDateTimeString()])
+            ->whereBetween(DB::raw("COALESCE(CONCAT(h.date,' ',COALESCE(h.time,'00:00:00')), h.created_at)"), [$start->toDateTimeString(), $end->toDateTimeString()])
             ->when($warehouseId, fn ($q) => $q->where('h.warehouse_id', $warehouseId))
             ->when(! $warehouseId, fn ($q) => $q->whereIn('h.warehouse_id', $array_warehouses_id))
             ->groupBy('h.provider_id')
@@ -7031,5 +7031,17 @@ class ReportController extends BaseController
             ],
             'warehouses' => $warehouses,
         ]);
+    }
+
+    /**
+     * SQL expression for "days between date column and NOW()" (MySQL and PostgreSQL).
+     */
+    private function sqlDaysDiff(string $dateColumn): string
+    {
+        $driver = \Illuminate\Support\Facades\DB::getDriverName();
+        if ($driver === 'pgsql') {
+            return "(CURRENT_DATE - ({$dateColumn})::date)";
+        }
+        return "TIMESTAMPDIFF(DAY, {$dateColumn}, NOW())";
     }
 }

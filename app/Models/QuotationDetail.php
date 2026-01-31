@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class QuotationDetail extends Model
 {
+    protected $guarded = ['id'];
+
     protected $fillable = [
-        'id', 'product_id', 'quotation_id', 'sale_unit_id', 'total', 'quantity', 'product_variant_id',
+        'product_id', 'quotation_id', 'sale_unit_id', 'total', 'quantity', 'product_variant_id',
         'price', 'TaxNet', 'discount', 'discount_method', 'tax_method',
     ];
 
