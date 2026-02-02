@@ -19,7 +19,7 @@ class CreateTransferDetailsTable extends Migration
             $table->integer('product_id')->index('product_id_transfers');
             $table->integer('product_variant_id')->nullable()->index('product_variant_id_transfer');
             $table->float('cost', 10, 0);
-            $table->float('TaxNet', 10, 0)->nullable();
+            $table->float('tax_net', 10, 0)->nullable();
             $table->string('tax_method', 192)->nullable()->default('1');
             $table->float('discount', 10, 0)->nullable();
             $table->string('discount_method', 192)->nullable()->default('1');

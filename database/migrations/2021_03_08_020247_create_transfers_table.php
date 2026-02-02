@@ -22,7 +22,7 @@ class CreateTransfersTable extends Migration
             $table->integer('to_warehouse_id');
             $table->float('items', 10, 0);
             $table->float('tax_rate', 10, 0)->nullable()->default(0);
-            $table->float('TaxNet', 10, 0)->nullable()->default(0);
+            $table->float('tax_net', 10, 0)->nullable()->default(0);
             $table->float('discount', 10, 0)->nullable()->default(0);
             $table->float('shipping', 10, 0)->nullable()->default(0);
             $table->float('GrandTotal', 10, 0)->default(0);

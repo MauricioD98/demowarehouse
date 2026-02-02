@@ -22,7 +22,7 @@ class CreateDraftSaleDetailsTable extends Migration
             $table->text('imei_number')->nullable();
             $table->float('price', 10, 0);
             $table->integer('sale_unit_id')->nullable()->index('draft_sale_details_sale_unit_id');
-            $table->float('TaxNet', 10, 0)->nullable();
+            $table->float('tax_net', 10, 0)->nullable();
             $table->string('tax_method', 192)->nullable()->default('1');
             $table->float('discount', 10, 0)->nullable();
             $table->string('discount_method', 192)->nullable()->default('1');

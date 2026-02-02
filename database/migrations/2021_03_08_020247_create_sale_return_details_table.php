@@ -18,7 +18,7 @@ class CreateSaleReturnDetailsTable extends Migration
             $table->integer('sale_return_id')->index('return_id');
             $table->integer('product_id')->index('product_id_details_returns');
             $table->float('price', 10, 0);
-            $table->float('TaxNet', 10, 0)->nullable()->default(0);
+            $table->float('tax_net', 10, 0)->nullable()->default(0);
             $table->string('tax_method', 192)->nullable()->default('1');
             $table->float('discount', 10, 0)->nullable()->default(0);
             $table->string('discount_method', 192)->nullable()->default('1');

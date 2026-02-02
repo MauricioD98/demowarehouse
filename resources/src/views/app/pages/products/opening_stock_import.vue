@@ -7,12 +7,12 @@
         <div class="d-flex align-items-center">
           <div class="hero-icon mr-3"><i class="i-Upload"></i></div>
           <div>
-            <h3 class="mb-1">Opening Stock Import</h3>
-            <div class="text-muted small">Add initial quantities from an Excel file.</div>
+            <h3 class="mb-1">{{$t('Opening_Stock_Import')}}</h3>
+            <div class="text-muted small">{{$t('Add_initial_quantities_from_Excel')}}</div>
           </div>
         </div>
         <router-link :to="{ name: 'index_products' }" class="btn btn-outline-secondary btn-sm mt-3 mt-sm-0">
-          <i class="i-Left"></i> Back to list
+          <i class="i-Left"></i> {{$t('Back_to_list')}}
         </router-link>
       </div>
     </div>
@@ -23,11 +23,11 @@
         <b-button-group size="sm" class="seg">
           <!-- Single is ALWAYS outline-primary (as requested) -->
           <b-button :variant="importType==='single' ? 'primary' : 'outline-primary'" @click="switchType('single')">
-            <i class="i-Shop mr-1"></i>Single Products
+            <i class="i-Shop mr-1"></i>{{$t('Single_Products')}}
           </b-button>
           <!-- Variant toggles to solid when active -->
           <b-button :variant="importType==='variant' ? 'primary' : 'outline-primary'" @click="switchType('variant')">
-            <i class="i-Library mr-1"></i>Variant Products
+            <i class="i-Library mr-1"></i>{{$t('Variant_Products')}}
           </b-button>
         </b-button-group>
       </div>
@@ -37,16 +37,16 @@
         <b-col md="7" class="mb-4">
           <!-- Warehouse selector -->
           <b-card class="mb-3">
-            <label class="font-weight-600 mb-1">Warehouse <span class="text-danger">*</span></label>
+            <label class="font-weight-600 mb-1">{{$t('Warehouse')}} <span class="text-danger">*</span></label>
             <v-select
               :reduce="function (opt) { return opt.value }"
               :options="warehouseOptions"
-              :placeholder="'Choose a warehouse...'"
+              :placeholder="$t('Choose_warehouse') + '...'"
               v-model="warehouse_id"
               :class="{'is-invalid': warehouseTouched && !warehouse_id}"
             />
-            <small class="text-muted d-block mt-1">Stock will be added to this warehouse.</small>
-            <div v-if="warehouseTouched && !warehouse_id" class="invalid-feedback d-block">Please choose a warehouse.</div>
+            <small class="text-muted d-block mt-1">{{$t('Stock_will_be_added_to_warehouse')}}</small>
+            <div v-if="warehouseTouched && !warehouse_id" class="invalid-feedback d-block">{{$t('Please_choose_warehouse')}}</div>
           </b-card>
 
           <!-- Dropzone -->
@@ -61,9 +61,9 @@
             <input ref="file" type="file" class="d-none" @change="onFileSelected" :accept="accept" />
             <div class="dz-inner text-center">
               <div class="dz-icon mb-2"><i class="i-Download-Window"></i></div>
-              <h5 class="mb-2">Click or drop your Excel file here</h5>
+              <h5 class="mb-2">{{$t('Click_or_drop_Excel_file')}}</h5>
               <div class="text-muted small">
-                Allowed formats: XLSX, XLS · Max size: 20MB
+                {{$t('Allowed_formats')}}
               </div>
 
               <!-- Selected file pill -->
@@ -73,7 +73,7 @@
                   <div class="file-name">{{ fileName }}</div>
                   <div class="file-size text-muted small">{{ prettySize }}</div>
                 </div>
-                <b-button size="sm" variant="outline-danger" @click.stop="clearFile">Remove</b-button>
+                <b-button size="sm" variant="outline-danger" @click.stop="clearFile">{{$t('Remove')}}</b-button>
               </div>
             </div>
           </div>
@@ -82,13 +82,13 @@
           <b-card class="mt-3">
             <div class="d-flex align-items-center mb-2">
               <i class="i-Information mr-2 text-primary"></i>
-              <h6 class="mb-0">Example format</h6>
+              <h6 class="mb-0">{{$t('Example_format')}}</h6>
             </div>
 
             <!-- Single example -->
             <div v-if="importType==='single'">
               <p class="small text-muted mb-2">
-                One row per product. Columns in <span class="badge badge-success-soft">green</span> are required.
+                {{$t('One_row_per_product')}}
               </p>
               <div class="table-responsive">
                 <table class="table table-sm table-bordered example-table">
@@ -111,15 +111,15 @@
                 </table>
               </div>
               <ul class="mini-notes mt-2">
-                <li><strong>product_code</strong> :must already exist.</li>
-                <li><strong>qty</strong> : Quantity to added to current stock.</li>
+                <li><strong>product_code</strong> : {{$t('Product_code_must_exist')}}.</li>
+                <li><strong>qty</strong> : {{$t('Quantity_to_add')}}.</li>
               </ul>
             </div>
 
             <!-- Variants example -->
             <div v-else>
               <p class="small text-muted mb-2">
-                One row per variant. Columns in <span class="badge badge-success-soft">green</span> are required.
+                {{$t('One_row_per_variant')}}
               </p>
               <div class="table-responsive">
                 <table class="table table-sm table-bordered example-table">
@@ -150,14 +150,14 @@
                 </table>
               </div>
               <ul class="mini-notes mt-2">
-                <li><strong>product_code</strong> and <strong>variant_code</strong>  : must exist, and must match.</li>
-                <li><strong>qty</strong>  : Quantity to added to the variant’s stock.</li>
+                <li><strong>product_code</strong> {{$t('and')}} <strong>variant_code</strong> : {{$t('Product_code_and_variant_must_match')}}.</li>
+                <li><strong>qty</strong> : {{$t('Quantity_to_add_variant')}}.</li>
               </ul>
             </div>
 
             <div class="mt-2">
               <a :href="exampleHref" class="btn btn-outline-info btn-sm" target="_blank" rel="noopener">
-                <i class="i-File-Excel mr-1"></i>Download example
+                <i class="i-File-Excel mr-1"></i>{{$t('Download_exemple')}}
               </a>
             </div>
           </b-card>
@@ -167,7 +167,7 @@
             <div class="d-flex align-items-start">
               <i class="i-Close-Window mr-2 mt-1"></i>
               <div>
-                <div class="font-weight-bold mb-1">Import failed. Fix the issues below:</div>
+                <div class="font-weight-bold mb-1">{{$t('Import_failed_fix_issues')}}</div>
                 <ul class="mb-0 pl-3">
                   <li v-for="(err, idx) in errorMessages" :key="'err-'+idx">{{ err }}</li>
                 </ul>
@@ -180,7 +180,7 @@
             <div class="d-flex align-items-start">
               <i class="i-Information mr-2 mt-1"></i>
               <div>
-                <div class="font-weight-bold mb-1">Warnings</div>
+                <div class="font-weight-bold mb-1">{{$t('Warnings')}}</div>
                 <ul class="mb-0 pl-3">
                   <li v-for="(w, idx) in warningMessages" :key="'warn-'+idx">{{ w }}</li>
                 </ul>
@@ -191,7 +191,7 @@
           <!-- Progress -->
           <div v-if="uploading" class="mt-3">
             <div class="d-flex justify-content-between mb-1">
-              <small class="text-muted">Uploading</small>
+              <small class="text-muted">{{$t('Uploading')}}</small>
               <small>{{ progress }}%</small>
             </div>
             <b-progress :value="progress" height="8px"></b-progress>
@@ -206,9 +206,9 @@
               :disabled="!canSubmit || uploading"
               @click="submit"
             >
-              <span v-if="!uploading"><i class="i-Upload mr-1"></i>Import now</span>
+              <span v-if="!uploading"><i class="i-Upload mr-1"></i>{{$t('Import_now')}}</span>
               <span v-else class="d-inline-flex align-items-center">
-                <span class="spinner sm spinner-white mr-2"></span>Processing…
+                <span class="spinner sm spinner-white mr-2"></span>{{$t('Processing')}}…
               </span>
             </b-button>
 
@@ -227,7 +227,7 @@
         <!-- Right column: Guide -->
         <b-col md="5" class="mb-4">
           <b-card class="mb-3">
-            <h6 class="mb-2">Required & optional columns</h6>
+            <h6 class="mb-2">{{$t('Required_optional_columns')}}</h6>
 
             <!-- Singles -->
             <div v-if="importType==='single'">
@@ -260,8 +260,8 @@
             <div class="d-flex">
               <div class="tip-badge mr-2"><i class="i-Information"></i></div>
               <div>
-                <strong>Heads up</strong>
-                <div class="small text-muted">Large files may take longer to process.</div>
+                <strong>{{$t('Heads_up')}}</strong>
+                <div class="small text-muted">{{$t('Large_files_may_take_longer')}}</div>
               </div>
             </div>
           </b-alert>

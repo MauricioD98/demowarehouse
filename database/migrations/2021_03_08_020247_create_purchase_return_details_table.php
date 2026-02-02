@@ -16,7 +16,7 @@ class CreatePurchaseReturnDetailsTable extends Migration
         Schema::create('purchase_return_details', function (Blueprint $table) {
             $table->id();
             $table->decimal('cost', 16, 3);
-            $table->float('TaxNet', 10, 0)->nullable()->default(0);
+            $table->float('tax_net', 10, 0)->nullable()->default(0);
             $table->string('tax_method', 192)->nullable()->default('1');
             $table->float('discount', 10, 0)->nullable()->default(0);
             $table->string('discount_method', 192)->nullable()->default('1');

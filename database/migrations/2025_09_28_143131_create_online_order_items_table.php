@@ -14,7 +14,7 @@ return new class extends Migration
             $table->integer('order_id');     // references online_orders.id
             $table->integer('product_id')->nullable(); // optional
             $table->integer('product_variant_id')->nullable();
-            $table->float('TaxNet', 10, 0)->nullable();
+            $table->float('tax_net', 10, 0)->nullable();
             $table->string('tax_method', 192)->nullable()->default('1');
             $table->float('discount', 10, 0)->nullable();
             $table->string('discount_method', 192)->nullable()->default('1');

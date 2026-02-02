@@ -7,12 +7,12 @@
         <div class="d-flex align-items-center">
           <div class="hero-icon mr-3"><i class="i-Upload"></i></div>
           <div>
-            <h3 class="mb-1">Import Products</h3>
-            <div class="text-muted small">Bulk add items from an Excel file.</div>
+            <h3 class="mb-1">{{$t('Import_Products_Title')}}</h3>
+            <div class="text-muted small">{{$t('Bulk_add_items_from_Excel')}}</div>
           </div>
         </div>
         <router-link :to="{ name: 'index_products' }" class="btn btn-outline-secondary btn-sm mt-3 mt-sm-0">
-          <i class="i-Left"></i> Back to list
+          <i class="i-Left"></i> {{$t('Back_to_list')}}
         </router-link>
       </div>
     </div>
@@ -22,14 +22,14 @@
       <div class="d-flex justify-content-center mb-3">
         <b-button-group size="sm" class="seg">
           <!-- Always outline-primary for Single (as requested) -->
-          <b-button :variant="importType==='single' ? 'primary' : 'outline-primary'" 
+          <b-button :variant="importType==='single' ? 'primary' : 'outline-primary'"
             @click="switchType('single')">
-            <i class="i-Shop mr-1"></i>Single Products
+            <i class="i-Shop mr-1"></i>{{$t('Single_Products')}}
           </b-button>
           <!-- Variant toggles to solid primary when active -->
           <b-button :variant="importType==='variant' ? 'primary' : 'outline-primary'"
                     @click="switchType('variant')">
-            <i class="i-Library mr-1"></i>Variant Products
+            <i class="i-Library mr-1"></i>{{$t('Variant_Products')}}
           </b-button>
         </b-button-group>
       </div>
@@ -48,9 +48,9 @@
             <input ref="file" type="file" class="d-none" @change="onFileSelected" :accept="accept" />
             <div class="dz-inner text-center">
               <div class="dz-icon mb-2"><i class="i-Download-Window"></i></div>
-              <h5 class="mb-2">Click or drop your Excel file here</h5>
+              <h5 class="mb-2">{{$t('Click_or_drop_Excel_file')}}</h5>
               <div class="text-muted small">
-                Allowed formats: XLSX, XLS · Max size: 20MB
+                {{$t('Allowed_formats')}}
               </div>
 
               <!-- Selected file pill -->
@@ -61,7 +61,7 @@
                   <div class="file-size text-muted small">{{ prettySize }}</div>
                 </div>
                 <b-button size="sm" variant="outline-danger" @click.stop="clearFile">
-                  Remove
+                  {{$t('Remove')}}
                 </b-button>
               </div>
             </div>
@@ -71,13 +71,13 @@
           <b-card class="mt-3">
             <div class="d-flex align-items-center mb-2">
               <i class="i-Information mr-2 text-primary"></i>
-              <h6 class="mb-0">Example format</h6>
+              <h6 class="mb-0">{{$t('Example_format')}}</h6>
             </div>
 
             <!-- Single example -->
             <div v-if="importType==='single'">
               <p class="small text-muted mb-2">
-                Create one row per product. Columns in <span class="badge badge-success-soft">green</span> are required.
+                {{$t('Create_one_row_per_product')}}
               </p>
               <div class="table-responsive">
                 <table class="table table-sm table-bordered example-table">
@@ -128,17 +128,16 @@
                 </table>
               </div>
               <ul class="mini-notes mt-2">
-                <li><strong>code</strong> must be unique across products and variants.</li>
-                <li><strong>unit</strong> must already exist (use its short name if available).</li>
-                <li><strong>category</strong> will be created automatically if missing.</li>
+                <li><strong>code</strong> {{$t('Code_must_be_unique')}}.</li>
+                <li><strong>unit</strong> {{$t('Unit_short_name')}}.</li>
+                <li><strong>category</strong> {{$t('Category_will_be_created')}}.</li>
               </ul>
             </div>
 
             <!-- Variant example -->
             <div v-else>
               <p class="small text-muted mb-2">
-                Create one row per variant. Repeat the product columns for each variant of the same product_code.
-                Columns in <span class="badge badge-success-soft">green</span> are required.
+                {{$t('Create_one_row_per_variant')}}
               </p>
               <div class="table-responsive">
                 <table class="table table-sm table-bordered example-table">
@@ -214,7 +213,7 @@
             <div class="d-flex align-items-start">
               <i class="i-Close-Window mr-2 mt-1"></i>
               <div>
-                <div class="font-weight-bold mb-1">Import failed. Fix the issues below:</div>
+                <div class="font-weight-bold mb-1">{{$t('Import_failed_fix_issues')}}</div>
                 <ul class="mb-0 pl-3">
                   <li v-for="(err, idx) in errorMessages" :key="'err-'+idx">{{ err }}</li>
                 </ul>
@@ -227,7 +226,7 @@
             <div class="d-flex align-items-start">
               <i class="i-Information mr-2 mt-1"></i>
               <div>
-                <div class="font-weight-bold mb-1">Warnings</div>
+                <div class="font-weight-bold mb-1">{{$t('Warnings')}}</div>
                 <ul class="mb-0 pl-3">
                   <li v-for="(w, idx) in warningMessages" :key="'warn-'+idx">{{ w }}</li>
                 </ul>
@@ -238,7 +237,7 @@
           <!-- Progress -->
           <div v-if="uploading" class="mt-3">
             <div class="d-flex justify-content-between mb-1">
-              <small class="text-muted">Uploading</small>
+              <small class="text-muted">{{$t('Uploading')}}</small>
               <small>{{ progress }}%</small>
             </div>
             <b-progress :value="progress" height="8px"></b-progress>
@@ -253,14 +252,14 @@
               :disabled="!canSubmit || uploading"
               @click="submit"
             >
-              <span v-if="!uploading"><i class="i-Upload mr-1"></i>Import now</span>
+              <span v-if="!uploading"><i class="i-Upload mr-1"></i>{{$t('Import_now')}}</span>
               <span v-else class="d-inline-flex align-items-center">
-                <span class="spinner sm spinner-white mr-2"></span>Processing…
+                <span class="spinner sm spinner-white mr-2"></span>{{$t('Processing')}}…
               </span>
             </b-button>
 
             <a :href="exampleHref" class="btn btn-outline-info btn-sm mr-2 mb-2" target="_blank" rel="noopener">
-              <i class="i-File-Excel mr-1"></i>Download example
+              <i class="i-File-Excel mr-1"></i>{{$t('Download_exemple')}}
             </a>
 
             <b-button
@@ -278,7 +277,7 @@
         <!-- Guide column -->
         <b-col md="12" class="mb-4">
           <b-card class="mb-3">
-            <h6 class="mb-2">Required & optional columns</h6>
+            <h6 class="mb-2">{{$t('Required_optional_columns')}}</h6>
 
             <!-- Singles -->
             <div v-if="importType==='single'">
@@ -318,8 +317,8 @@
             <div class="d-flex">
               <div class="tip-badge mr-2"><i class="i-Information"></i></div>
               <div>
-                <strong>Heads up</strong>
-                <div class="small text-muted">Large files may take longer to process.</div>
+                <strong>{{$t('Heads_up')}}</strong>
+                <div class="small text-muted">{{$t('Large_files_may_take_longer')}}</div>
               </div>
             </div>
           </b-alert>

@@ -551,7 +551,7 @@ return [
 'ListTransfers' => 'Lista de transferencias',
 'CreateTransfer' => 'Crear transferencia',
 'OrdersManager' => 'Gerente de pedidos',
-'ListQuotations' => 'List Quotations',
+'ListQuotations' => 'Lista de cotizaciones',
 'ListPurchases' => 'Lista de compras',
 'ListSales' => 'Lista de ventas',
 'ListReturns' => 'Lista de devoluciones',
@@ -1960,14 +1960,44 @@ return [
 'Price_Format' => 'Formato de Precio',
 'How_many_items_do_you_want_to_display_in_POS' => '¿Cuántos artículos desea mostrar en el POS?',
 
-
-
-
-
-
-
-
-
-
+// Import Pages Translations
+'Opening_Stock_Import' => 'Importar stock inicial',
+'Add_initial_quantities_from_Excel' => 'Agregar cantidades iniciales desde un archivo Excel',
+'Back_to_list' => 'Volver a la lista',
+'Single_Products' => 'Productos simples',
+'Variant_Products' => 'Productos con variantes',
+'Choose_warehouse' => 'Elegir almacén',
+'Stock_will_be_added_to_warehouse' => 'El stock se agregará a este almacén',
+'Please_choose_warehouse' => 'Por favor elija un almacén',
+'Click_or_drop_Excel_file' => 'Haga clic o suelte su archivo Excel aquí',
+'Allowed_formats' => 'Formatos permitidos: XLSX, XLS · Tamaño máx: 20MB',
+'Remove' => 'Eliminar',
+'Example_format' => 'Formato de ejemplo',
+'One_row_per_product' => 'Una fila por producto. Las columnas en verde son obligatorias',
+'One_row_per_variant' => 'Una fila por variante. Las columnas en verde son obligatorias',
+'Product_code_must_exist' => 'Debe existir ya',
+'Positive_number' => 'Número positivo',
+'Product_code_parent' => 'Código del producto padre usado para agrupar variantes',
+'Variant_code_must_be_unique' => 'El código de variante debe ser único globalmente',
+'Unit_must_exist' => 'La unidad debe existir',
+'Category_will_be_created' => 'La categoría se creará automáticamente si falta',
+'Large_files_may_take_longer' => 'Los archivos grandes pueden tardar más en procesarse',
+'Import_now' => 'Importar ahora',
+'Processing' => 'Procesando',
+'Import_failed_fix_issues' => 'Importación fallida. Corrija los problemas a continuación',
+'Warnings' => 'Advertencias',
+'Uploading' => 'Subiendo',
+'Required_optional_columns' => 'Columnas obligatorias y opcionales',
+'Import_Products_Title' => 'Importar productos',
+'Bulk_add_items_from_Excel' => 'Agregar artículos masivamente desde un archivo Excel',
+'Create_one_row_per_product' => 'Cree una fila por producto. Las columnas en verde son obligatorias',
+'Create_one_row_per_variant' => 'Cree una fila por variante. Repita las columnas del producto para cada variante del mismo código',
+'Code_must_be_unique' => 'El código debe ser único entre productos y variantes',
+'Unit_short_name' => 'La unidad debe existir · Use el nombre corto de la unidad cuando sea posible',
+'SuppliersManagement' => 'Gestión de proveedores',
+'Product_code_and_variant_must_match' => 'Deben existir y coincidir',
+'Quantity_to_add' => 'Cantidad a agregar al stock',
+'Quantity_to_add_variant' => 'Cantidad a agregar al stock de la variante',
+'Heads_up' => 'Atención',
 
 ];

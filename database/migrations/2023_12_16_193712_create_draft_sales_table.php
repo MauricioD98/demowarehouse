@@ -21,7 +21,7 @@ class CreateDraftSalesTable extends Migration
             $table->integer('client_id')->index('draft_sales_client_id');
             $table->integer('warehouse_id')->index('draft_sales_warehouse_id');
             $table->float('tax_rate', 10, 0)->nullable()->default(0);
-            $table->float('TaxNet', 10, 0)->nullable()->default(0);
+            $table->float('tax_net', 10, 0)->nullable()->default(0);
             $table->float('discount', 10, 0)->nullable()->default(0);
             $table->float('shipping', 10, 0)->nullable()->default(0);
             $table->float('GrandTotal', 10, 0)->default(0);

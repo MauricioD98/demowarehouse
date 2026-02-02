@@ -20,7 +20,7 @@ class CreateSaleDetailsTable extends Migration
             $table->integer('product_id')->index('sale_product_id');
             $table->integer('product_variant_id')->nullable()->index('sale_product_variant_id');
             $table->float('price', 10, 0);
-            $table->float('TaxNet', 10, 0)->nullable();
+            $table->float('tax_net', 10, 0)->nullable();
             $table->string('tax_method', 192)->nullable()->default('1');
             $table->float('discount', 10, 0)->nullable();
             $table->string('discount_method', 192)->nullable()->default('1');

@@ -25,7 +25,7 @@ class CreateProductsTable extends Migration
             $table->integer('unit_id')->nullable();
             $table->integer('unit_sale_id')->nullable();
             $table->integer('unit_purchase_id')->nullable();
-            $table->float('TaxNet', 10, 0)->nullable()->default(0);
+            $table->float('tax_net', 10, 0)->nullable()->default(0);
             $table->string('tax_method', 192)->nullable()->default('1');
             $table->text('image')->nullable();
             $table->text('note')->nullable();
