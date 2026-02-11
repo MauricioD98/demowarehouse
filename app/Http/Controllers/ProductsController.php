@@ -414,6 +414,14 @@ class ProductsController extends BaseController
 
             \DB::transaction(function () use ($request) {
 
+                // Helper function to normalize nullable integer values
+                $normalizeNullableInt = function ($value) {
+                    if ($value === null || $value === '' || $value === 'null' || $value === 'NULL') {
+                        return null;
+                    }
+                    return is_numeric($value) ? (int) $value : null;
+                };
+
                 // -- Create New Product
                 $Product = new Product;
 
@@ -423,8 +431,8 @@ class ProductsController extends BaseController
                 $Product->code = $request['code'];
                 $Product->Type_barcode = $request['Type_barcode'];
                 $Product->category_id = $request['category_id'];
-                $Product->sub_category_id = $request['sub_category_id'] ?? null;
-                $Product->brand_id = $request['brand_id'];
+                $Product->sub_category_id = $normalizeNullableInt($request['sub_category_id'] ?? null);
+                $Product->brand_id = $normalizeNullableInt($request['brand_id'] ?? null);
                 $Product->note = $request['note'];
                 $Product->TaxNet = $request['TaxNet'] ? $request['TaxNet'] : 0;
                 $Product->tax_method = $request['tax_method'];
@@ -434,13 +442,13 @@ class ProductsController extends BaseController
                 $Product->points = $request['points'] ? $request['points'] : 0;
 
                 // —————— Warranty & Guarantee ——————
-                $Product->warranty_period = $request['warranty_period'] ?? null;
+                $Product->warranty_period = $normalizeNullableInt($request['warranty_period'] ?? null);
                 $Product->warranty_unit = $request['warranty_unit'] ?? null;
                 $Product->warranty_terms = $request['warranty_terms'] ?? null;
 
                 // casted boolean
                 $Product->has_guarantee = filter_var($request['has_guarantee'], FILTER_VALIDATE_BOOLEAN);
-                $Product->guarantee_period = $request['guarantee_period'] ?? null;
+                $Product->guarantee_period = $normalizeNullableInt($request['guarantee_period'] ?? null);
                 $Product->guarantee_unit = $request['guarantee_unit'] ?? null;
 
                 // -- check if type is_single
@@ -452,9 +460,11 @@ class ProductsController extends BaseController
 
                     $Product->cost = $request['cost'];
 
-                    $Product->unit_id = $request['unit_id'];
-                    $Product->unit_sale_id = $request['unit_sale_id'] ? $request['unit_sale_id'] : $request['unit_id'];
-                    $Product->unit_purchase_id = $request['unit_purchase_id'] ? $request['unit_purchase_id'] : $request['unit_id'];
+                    $Product->unit_id = $normalizeNullableInt($request['unit_id'] ?? null);
+                    $unitSaleId = $normalizeNullableInt($request['unit_sale_id'] ?? null);
+                    $unitPurchaseId = $normalizeNullableInt($request['unit_purchase_id'] ?? null);
+                    $Product->unit_sale_id = $unitSaleId ?? $Product->unit_id;
+                    $Product->unit_purchase_id = $unitPurchaseId ?? $Product->unit_id;
 
                     $Product->stock_alert = $request['stock_alert'] ? $request['stock_alert'] : 0;
                     $Product->weight = $request['weight'] ? $request['weight'] : null;
@@ -469,9 +479,11 @@ class ProductsController extends BaseController
                     $Product->wholesale_price = 0;
                     $Product->min_price = 0;
 
-                    $Product->unit_id = $request['unit_id'];
-                    $Product->unit_sale_id = $request['unit_sale_id'] ? $request['unit_sale_id'] : $request['unit_id'];
-                    $Product->unit_purchase_id = $request['unit_purchase_id'] ? $request['unit_purchase_id'] : $request['unit_id'];
+                    $Product->unit_id = $normalizeNullableInt($request['unit_id'] ?? null);
+                    $unitSaleId = $normalizeNullableInt($request['unit_sale_id'] ?? null);
+                    $unitPurchaseId = $normalizeNullableInt($request['unit_purchase_id'] ?? null);
+                    $Product->unit_sale_id = $unitSaleId ?? $Product->unit_id;
+                    $Product->unit_purchase_id = $unitPurchaseId ?? $Product->unit_id;
 
                     $Product->stock_alert = $request['stock_alert'] ? $request['stock_alert'] : 0;
                     $Product->weight = $request['weight'] ? $request['weight'] : null;
@@ -860,6 +872,14 @@ class ProductsController extends BaseController
 
             \DB::transaction(function () use ($request, $id) {
 
+                // Helper function to normalize nullable integer values
+                $normalizeNullableInt = function ($value) {
+                    if ($value === null || $value === '' || $value === 'null' || $value === 'NULL') {
+                        return null;
+                    }
+                    return is_numeric($value) ? (int) $value : null;
+                };
+
                 $Product = Product::where('id', $id)
                     ->where('deleted_at', '=', null)
                     ->first();
@@ -870,11 +890,8 @@ class ProductsController extends BaseController
                 $Product->code = $request['code'];
                 $Product->Type_barcode = $request['Type_barcode'];
                 $Product->category_id = $request['category_id'];
-                // normalize optional sub-category (can be null/empty)
-                $Product->sub_category_id = isset($request['sub_category_id']) && $request['sub_category_id'] !== '' && $request['sub_category_id'] !== 'null'
-                    ? $request['sub_category_id']
-                    : null;
-                $Product->brand_id = $request['brand_id'] == 'null' ? null : $request['brand_id'];
+                $Product->sub_category_id = $normalizeNullableInt($request['sub_category_id'] ?? null);
+                $Product->brand_id = $normalizeNullableInt($request['brand_id'] ?? null);
                 $Product->TaxNet = $request['TaxNet'];
                 $Product->tax_method = $request['tax_method'];
                 $Product->discount = $request['discount'];
@@ -885,19 +902,13 @@ class ProductsController extends BaseController
                 // ——— Warranty & Guarantee Tracking ———
 
                 // Warranty
-                $Product->warranty_period = $request['warranty_period'] !== null
-                ? (int) $request['warranty_period']
-                : null;
+                $Product->warranty_period = $normalizeNullableInt($request['warranty_period'] ?? null);
                 $Product->warranty_unit = $request['warranty_unit'] ?? null;
                 $Product->warranty_terms = $request['warranty_terms'] ?? null;
 
                 // Guarantee
-                // If your form posts 'has_guarantee' only when checked, you might need:
                 $Product->has_guarantee = filter_var($request['has_guarantee'], FILTER_VALIDATE_BOOLEAN);
-
-                $Product->guarantee_period = $request['guarantee_period'] !== null
-                ? (int) $request['guarantee_period']
-                : null;
+                $Product->guarantee_period = $normalizeNullableInt($request['guarantee_period'] ?? null);
                 $Product->guarantee_unit = $request['guarantee_unit'] ?? null;
 
                 // -- check if type is_single
@@ -907,9 +918,11 @@ class ProductsController extends BaseController
                     $Product->wholesale_price = ! empty($request['wholesale_price']) ? $request['wholesale_price'] : 0;
                     $Product->min_price = ! empty($request['min_price']) ? $request['min_price'] : 0;
 
-                    $Product->unit_id = $request['unit_id'];
-                    $Product->unit_sale_id = $request['unit_sale_id'] ? $request['unit_sale_id'] : $request['unit_id'];
-                    $Product->unit_purchase_id = $request['unit_purchase_id'] ? $request['unit_purchase_id'] : $request['unit_id'];
+                    $Product->unit_id = $normalizeNullableInt($request['unit_id'] ?? null);
+                    $unitSaleId = $normalizeNullableInt($request['unit_sale_id'] ?? null);
+                    $unitPurchaseId = $normalizeNullableInt($request['unit_purchase_id'] ?? null);
+                    $Product->unit_sale_id = $unitSaleId ?? $Product->unit_id;
+                    $Product->unit_purchase_id = $unitPurchaseId ?? $Product->unit_id;
 
                     $Product->stock_alert = $request['stock_alert'] ? $request['stock_alert'] : 0;
                     $Product->weight = $request['weight'] ? $request['weight'] : null;
@@ -925,9 +938,11 @@ class ProductsController extends BaseController
                     $Product->wholesale_price = 0;
                     $Product->min_price = 0;
 
-                    $Product->unit_id = $request['unit_id'];
-                    $Product->unit_sale_id = $request['unit_sale_id'] ? $request['unit_sale_id'] : $request['unit_id'];
-                    $Product->unit_purchase_id = $request['unit_purchase_id'] ? $request['unit_purchase_id'] : $request['unit_id'];
+                    $Product->unit_id = $normalizeNullableInt($request['unit_id'] ?? null);
+                    $unitSaleId = $normalizeNullableInt($request['unit_sale_id'] ?? null);
+                    $unitPurchaseId = $normalizeNullableInt($request['unit_purchase_id'] ?? null);
+                    $Product->unit_sale_id = $unitSaleId ?? $Product->unit_id;
+                    $Product->unit_purchase_id = $unitPurchaseId ?? $Product->unit_id;
 
                     $Product->stock_alert = $request['stock_alert'] ? $request['stock_alert'] : 0;
                     $Product->weight = $request['weight'] ? $request['weight'] : null;

@@ -19,7 +19,7 @@ class CreateEcommerceClientsTable extends Migration
             $table->string('username', 192);
             $table->string('email', 192);
             $table->dateTime('email_verified_at')->nullable();
-            $table->string('password', 191);
+            $table->string('password', 191)->nullable();
             $table->string('remember_token', 100)->nullable();
             $table->boolean('status')->default(1);
             $table->timestamps(6);

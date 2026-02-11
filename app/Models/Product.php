@@ -11,7 +11,7 @@ class Product extends Model
     protected $fillable = [
         'code', 'Type_barcode', 'name', 'cost', 'price', 'unit_id', 'unit_sale_id', 'unit_purchase_id',
         'stock_alert', 'weight', 'category_id', 'sub_category_id', 'is_variant', 'is_imei',
-        'tax_method', 'image', 'brand_id', 'is_active', 'note', 'type',
+        'tax_method', 'tax_net', 'image', 'brand_id', 'is_active', 'note', 'type',
         'warranty_period', 'warranty_unit', 'warranty_terms', 'wholesale_price', 'min_price',
         'has_guarantee', 'guarantee_period', 'guarantee_unit', 'points', 'discount', 'discount_method',
         'is_featured', 'hide_from_online_store',
@@ -34,12 +34,28 @@ class Product extends Model
         'price' => 'double',
         'stock_alert' => 'double',
         'weight' => 'double',
-        'TaxNet' => 'double',
+        'tax_net' => 'double',
         'points' => 'double',
         'has_guarantee' => 'boolean',
         'hide_from_online_store' => 'boolean',
         'discount' => 'double',
     ];
+
+    /**
+     * Alias for tax_net (DB column is snake_case; keep TaxNet for backward compatibility).
+     */
+    public function getTaxNetAttribute()
+    {
+        return $this->attributes['tax_net'] ?? 0;
+    }
+
+    /**
+     * Alias for tax_net so that $product->TaxNet = x writes to tax_net column.
+     */
+    public function setTaxNetAttribute($value)
+    {
+        $this->attributes['tax_net'] = $value;
+    }
 
     public function variants()
     {

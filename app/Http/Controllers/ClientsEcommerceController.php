@@ -291,24 +291,17 @@ class ClientsEcommerceController extends BaseController
 
 
         \DB::transaction(function () use ($id , $client_ecommerce , $request) {
-            $current = $client_ecommerce->password;
-
-            if ($request->NewPassword == 'null' || $request->NewPassword === null || $request->NewPassword == '') {
-                $pass = $client_ecommerce->password;
-            }else{
-
-                if ($request->NewPassword != $current) {
-                    $pass = Hash::make($request->NewPassword);
-                } else {
-                    $pass = $client_ecommerce->password;
-                }
-
-            }
-                  
-            EcommerceClient::where('client_id' , $id)->update([
+            $updateData = [
                 'email' => $request['email'],
-                'password' => $pass,
-            ]);
+            ];
+
+            // Solo actualizar la contraseña si se envía una nueva
+            if ($request->filled('NewPassword') && !empty(trim($request->NewPassword))) {
+                $updateData['password'] = Hash::make($request->NewPassword);
+            }
+            // Si no se envía contraseña, se mantiene la existente (no se actualiza)
+                  
+            EcommerceClient::where('client_id' , $id)->update($updateData);
 
             Client::whereId($id)->update([
                 'email' => $request['email'],

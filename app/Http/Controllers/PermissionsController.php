@@ -7,6 +7,7 @@ use App\Models\Role;
 use App\utils\helpers;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class PermissionsController extends BaseController
 {
@@ -69,16 +70,15 @@ class PermissionsController extends BaseController
                 $Role->save();
 
                 $role = Role::findOrFail($Role->id);
-                $role->permissions()->detach();
                 $permissions = $request->permissions ?? [];
                 $data = [];
                 foreach ($permissions as $permission_slug) {
                     $perm = Permission::firstOrCreate(['name' => $permission_slug]);
                     $data[] = $perm->id;
                 }
-                if (!empty($data)) {
-                    $role->permissions()->attach($data);
-                }
+                // Usar sync() en lugar de detach() + attach() para evitar problemas con duplicados
+                // sync() elimina relaciones que no están en el array y agrega las nuevas de forma segura
+                $role->permissions()->sync($data);
 
             }, 10);
 
@@ -119,16 +119,15 @@ class PermissionsController extends BaseController
                 Role::whereId($id)->update($request['role']);
 
                 $role = Role::findOrFail($id);
-                $role->permissions()->detach();
                 $permissions = $request->permissions ?? [];
                 $data = [];
                 foreach ($permissions as $permission_slug) {
                     $perm = Permission::firstOrCreate(['name' => $permission_slug]);
                     $data[] = $perm->id;
                 }
-                if (!empty($data)) {
-                    $role->permissions()->attach($data);
-                }
+                // Usar sync() en lugar de detach() + attach() para evitar problemas con duplicados
+                // sync() elimina relaciones que no están en el array y agrega las nuevas de forma segura
+                $role->permissions()->sync($data);
 
             }, 10);
 
