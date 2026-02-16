@@ -26,7 +26,7 @@ const baseRoutes = [
                     import(
                         /* webpackChunkName: "dashboard" */ "./views/app/dashboard/dashboard"
                     )
-            
+
                 },
 
             //Products
@@ -537,7 +537,7 @@ const baseRoutes = [
                     )
             },
 
-          
+
 
             //expenses
             {
@@ -681,7 +681,7 @@ const baseRoutes = [
                                 /* webpackChunkName: "change_to_sale" */ "./views/app/pages/sales/change_to_sale.vue"
                             )
                     },
-                    
+
                 ]
             },
 
@@ -1122,11 +1122,11 @@ const baseRoutes = [
                                         "./views/app/pages/hrm/leaves/leave_type"
                                     )
                             },
-                           
+
                         ]
                     },
 
-                    
+
                 ]
             },
 
@@ -1276,7 +1276,7 @@ const baseRoutes = [
                     },
 
 
-                    
+
                     {
                     name: "CustomerLedger",
                     path: "customers/:id/ledger",
@@ -1462,7 +1462,7 @@ const baseRoutes = [
                                 "./views/app/pages/subscription_product/subscription_product_create"
                             )
                     },
-                 
+
                     {
                         name: "subscription_product_details",
                         path: "detail/:id",
@@ -1474,8 +1474,8 @@ const baseRoutes = [
                     },
 
 
-                    
-                    
+
+
                 ]
             },
 
@@ -1685,7 +1685,7 @@ const baseRoutes = [
                                 /* webpackChunkName: "custom_fields" */ "./views/app/pages/settings/custom_fields"
                             )
                     }
-                  
+
                 ]
             },
             // WooCommerce Settings (optional module)
@@ -1799,7 +1799,7 @@ const baseRoutes = [
                     },
 
 
-                    
+
 
                       {
                         name: "draft_invoices_report",
@@ -1892,7 +1892,7 @@ const baseRoutes = [
                             )
                     },
 
-                    
+
 
                     {
                         name: "profit_and_loss",
@@ -2211,7 +2211,7 @@ const baseRoutes = [
             import(/* webpackChunkName: "pos" */ "./views/app/pages/pos")
     },
 
-   
+
 
 
     {
@@ -2224,7 +2224,7 @@ const baseRoutes = [
     },
 
     {
-        path: "not_authorize",
+        path: "/not_authorize",
         name: "not_authorize",
         component: () =>
             import(

@@ -11,13 +11,17 @@ class SalePolicy
     use HandlesAuthorization;
 
     /**
-     * Determine whether the user can view any models.
+     * Determine whether the user can view any models (list/index).
+     * Uses same permission as view() so non-admin users with Sales_view can access the list.
      *
-     * @return mixed
+     * @return bool
      */
     public function viewAny(User $user)
     {
-        //
+        if ((int) $user->role_id === 1) {
+            return true;
+        }
+        return $user->hasPermissionByName('Sales_view');
     }
 
     /**
@@ -28,9 +32,10 @@ class SalePolicy
      */
     public function view(User $user)
     {
-        $permission = Permission::where('name', 'Sales_view')->first();
-
-        return $permission && $user->hasRole($permission->roles);
+        if ((int) $user->role_id === 1) {
+            return true;
+        }
+        return $user->hasPermissionByName('Sales_view');
     }
 
     /**
@@ -40,9 +45,10 @@ class SalePolicy
      */
     public function create(User $user)
     {
-        $permission = Permission::where('name', 'Sales_add')->first();
-
-        return $permission && $user->hasRole($permission->roles);
+        if ((int) $user->role_id === 1) {
+            return true;
+        }
+        return $user->hasPermissionByName('Sales_add');
     }
 
     /**
@@ -53,9 +59,10 @@ class SalePolicy
      */
     public function update(User $user)
     {
-        $permission = Permission::where('name', 'Sales_edit')->first();
-
-        return $permission && $user->hasRole($permission->roles);
+        if ((int) $user->role_id === 1) {
+            return true;
+        }
+        return $user->hasPermissionByName('Sales_edit');
     }
 
     /**
@@ -66,9 +73,10 @@ class SalePolicy
      */
     public function delete(User $user)
     {
-        $permission = Permission::where('name', 'Sales_delete')->first();
-
-        return $permission && $user->hasRole($permission->roles);
+        if ((int) $user->role_id === 1) {
+            return true;
+        }
+        return $user->hasPermissionByName('Sales_delete');
     }
 
     public function Reports_sales(User $user)

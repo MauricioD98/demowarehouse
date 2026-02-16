@@ -14,21 +14,23 @@ class UserSeeder extends Seeder
      */
     public function run()
     {
-        // Insert some stuff
-        DB::table('users')->insert(
+        $now = now();
+        DB::table('users')->updateOrInsert(
+            ['id' => 1],
             [
-                'id' => 1,
                 'firstname' => 'William',
                 'lastname' => 'Castillo',
                 'username' => 'William Castillo',
                 'email' => 'admin@example.com',
-                'password' =>bcrypt('admin123'),
+                'password' => bcrypt('admin123'),
                 'avatar' => 'no_avatar.png',
                 'phone' => '0123456789',
                 'role_id' => 1,
                 'statut' => 1,
                 'is_all_warehouses' => 1,
                 'record_view' => 1,
+                'created_at' => $now,
+                'updated_at' => $now,
             ]
         );
     }

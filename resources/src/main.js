@@ -232,7 +232,7 @@ axios.interceptors.response.use(
     }
 
     if (status === 403) {
-      router.push({ name: 'not_authorize' });
+      router.push({ path: '/not_authorize' });
     }
 
     return Promise.reject(data || error.message);

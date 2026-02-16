@@ -80,9 +80,27 @@ class SettingPolicy
 
     public function pos_settings(User $user)
     {
-        $permission = Permission::where('name', 'pos_settings')->first();
+        // Allow admin users
+        if ((int) $user->role_id === 1) {
+            return true;
+        }
 
-        return $user->hasRole($permission->roles);
+        // Allow users with pos_settings permission
+        if ($user->hasPermissionByName('pos_settings')) {
+            return true;
+        }
+
+        // Allow users with Sales_view permission (they need POS settings to view sales)
+        if ($user->hasPermissionByName('Sales_view')) {
+            return true;
+        }
+
+        // Allow users with Pos_view permission
+        if ($user->hasPermissionByName('Pos_view')) {
+            return true;
+        }
+
+        return false;
     }
 
     public function payment_gateway(User $user)

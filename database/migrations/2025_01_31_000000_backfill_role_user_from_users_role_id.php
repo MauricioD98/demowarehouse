@@ -12,16 +12,15 @@ class BackfillRoleUserFromUsersRoleId extends Migration
      */
     public function up()
     {
-        $now = now()->format('Y-m-d H:i:s');
+        $userIdsInPivot = DB::table('role_user')->pluck('user_id')->unique()->values()->all();
         $users = DB::table('users')
             ->whereNull('deleted_at')
             ->whereNotNull('role_id')
-            ->whereNotIn('id', function ($q) {
-                $q->select('user_id')->from('role_user');
-            })
+            ->whereNotIn('id', $userIdsInPivot ?: [0])
             ->select('id', 'role_id')
             ->get();
 
+        $now = now()->format('Y-m-d H:i:s');
         foreach ($users as $user) {
             DB::table('role_user')->insert([
                 'user_id' => $user->id,

@@ -26,6 +26,26 @@ use Illuminate\Support\Facades\Auth;
 class DashboardController extends Controller
 {
     use CalculatesCogsAndAverageCost;
+
+    /**
+     * Get database-agnostic date format expression
+     * MySQL: DATE_FORMAT(date,'%Y-%m-%d')
+     * PostgreSQL: TO_CHAR(date, 'YYYY-MM-DD')
+     */
+    protected function dateFormat($column = 'date', $format = '%Y-%m-%d')
+    {
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'pgsql') {
+            // Convert MySQL format to PostgreSQL format
+            $pgFormat = str_replace(['%Y', '%m', '%d'], ['YYYY', 'MM', 'DD'], $format);
+            return "TO_CHAR({$column}, '{$pgFormat}')";
+        }
+
+        // MySQL/MariaDB
+        return "DATE_FORMAT({$column},'{$format}')";
+    }
+
     // ----------------- dashboard_data -----------------------\\
 
     public function dashboard_data(Request $request)
@@ -117,10 +137,10 @@ class DashboardController extends Controller
                     return $query->whereIn('warehouse_id', $array_warehouses_id);
                 }
             })
-            ->groupBy(DB::raw("DATE_FORMAT(date,'%Y-%m-%d')"))
+            ->groupBy(DB::raw($this->dateFormat('date', '%Y-%m-%d')))
             ->orderBy('date', 'asc')
             ->get([
-                DB::raw(DB::raw("DATE_FORMAT(date,'%Y-%m-%d') as date")),
+                DB::raw($this->dateFormat('date', '%Y-%m-%d') . ' as date'),
                 DB::raw('SUM(GrandTotal) AS count'),
             ])
             ->pluck('count', 'date');
@@ -182,10 +202,10 @@ class DashboardController extends Controller
                     return $query->whereIn('warehouse_id', $array_warehouses_id);
                 }
             })
-            ->groupBy(DB::raw("DATE_FORMAT(date,'%Y-%m-%d')"))
+            ->groupBy(DB::raw($this->dateFormat('date', '%Y-%m-%d')))
             ->orderBy('date', 'asc')
             ->get([
-                DB::raw(DB::raw("DATE_FORMAT(date,'%Y-%m-%d') as date")),
+                DB::raw($this->dateFormat('date', '%Y-%m-%d') . ' as date'),
                 DB::raw('SUM(GrandTotal) AS count'),
             ])
             ->pluck('count', 'date');
@@ -605,10 +625,10 @@ class DashboardController extends Controller
 
                 }
             })
-            ->groupBy(DB::raw("DATE_FORMAT(date,'%Y-%m-%d')"))
+            ->groupBy(DB::raw($this->dateFormat('date', '%Y-%m-%d')))
             ->orderBy('date', 'asc')
             ->get([
-                DB::raw(DB::raw("DATE_FORMAT(date,'%Y-%m-%d') as date")),
+                DB::raw($this->dateFormat('date', '%Y-%m-%d') . ' as date'),
                 DB::raw('SUM(montant) AS count'),
             ])
             ->pluck('count', 'date');
@@ -632,10 +652,10 @@ class DashboardController extends Controller
 
                 }
             })
-            ->groupBy(DB::raw("DATE_FORMAT(date,'%Y-%m-%d')"))
+            ->groupBy(DB::raw($this->dateFormat('date', '%Y-%m-%d')))
             ->orderBy('date', 'asc')
             ->get([
-                DB::raw(DB::raw("DATE_FORMAT(date,'%Y-%m-%d') as date")),
+                DB::raw($this->dateFormat('date', '%Y-%m-%d') . ' as date'),
                 DB::raw('SUM(montant) AS count'),
             ])
             ->pluck('count', 'date');
@@ -659,10 +679,10 @@ class DashboardController extends Controller
 
                 }
             })
-            ->groupBy(DB::raw("DATE_FORMAT(date,'%Y-%m-%d')"))
+            ->groupBy(DB::raw($this->dateFormat('date', '%Y-%m-%d')))
             ->orderBy('date', 'asc')
             ->get([
-                DB::raw(DB::raw("DATE_FORMAT(date,'%Y-%m-%d') as date")),
+                DB::raw($this->dateFormat('date', '%Y-%m-%d') . ' as date'),
                 DB::raw('SUM(montant) AS count'),
             ])
             ->pluck('count', 'date');
@@ -686,10 +706,10 @@ class DashboardController extends Controller
 
                 }
             })
-            ->groupBy(DB::raw("DATE_FORMAT(date,'%Y-%m-%d')"))
+            ->groupBy(DB::raw($this->dateFormat('date', '%Y-%m-%d')))
             ->orderBy('date', 'asc')
             ->get([
-                DB::raw(DB::raw("DATE_FORMAT(date,'%Y-%m-%d') as date")),
+                DB::raw($this->dateFormat('date', '%Y-%m-%d') . ' as date'),
                 DB::raw('SUM(montant) AS count'),
             ])
             ->pluck('count', 'date');
@@ -707,10 +727,10 @@ class DashboardController extends Controller
                     return $query->whereIn('warehouse_id', $array_warehouses_id);
                 }
             })
-            ->groupBy(DB::raw("DATE_FORMAT(date,'%Y-%m-%d')"))
+            ->groupBy(DB::raw($this->dateFormat('date', '%Y-%m-%d')))
             ->orderBy('date', 'asc')
             ->get([
-                DB::raw(DB::raw("DATE_FORMAT(date,'%Y-%m-%d') as date")),
+                DB::raw($this->dateFormat('date', '%Y-%m-%d') . ' as date'),
                 DB::raw('SUM(amount) AS count'),
             ])
             ->pluck('count', 'date');

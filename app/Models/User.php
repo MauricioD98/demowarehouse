@@ -64,7 +64,8 @@ class User extends Authenticatable
             $role = Role::find($this->role_id);
             if ($role) {
                 $this->roles()->sync([$this->role_id]);
-                return $this->roles()->get();
+                $roles = $this->roles()->get();
+                $this->setRelation('roles', $roles);
             }
         }
         return $roles;
@@ -98,6 +99,28 @@ class User extends Authenticatable
         return $allowedRoleIds->intersect($userRoleIds)->isNotEmpty();
     }
 
+    /**
+     * Check if the user has a permission by name (via their role).
+     * Matches the same logic used by GetUserAuth so API and policy stay in sync.
+     *
+     * @param  string  $permissionName  e.g. 'Sales_view', 'Sales_add'
+     * @return bool
+     */
+    public function hasPermissionByName(string $permissionName): bool
+    {
+        $role = $this->getEffectiveRoles()->first();
+        if ($role) {
+            // Load permissions if not already loaded
+            $role->loadMissing('permissions');
+            return $role->inRole($permissionName);
+        }
+        if ($this->role_id) {
+            $role = Role::with('permissions')->find($this->role_id);
+            return $role && $role->permissions->contains('name', $permissionName);
+        }
+        return false;
+    }
+
     public function assignedWarehouses()
     {
         return $this->belongsToMany('App\Models\Warehouse');
@@ -105,7 +128,7 @@ class User extends Authenticatable
 
     /**
      * Check if user has record_view permission (user-level boolean with backward compatibility)
-     * 
+     *
      * @return bool
      */
     public function hasRecordView()
@@ -118,6 +141,8 @@ class User extends Authenticatable
             // Fallback to role permission check for backward compatibility
             $role = $this->getEffectiveRoles()->first();
             if ($role) {
+                // Load permissions if not already loaded
+                $role->loadMissing('permissions');
                 return $role->inRole('record_view');
             }
         }
