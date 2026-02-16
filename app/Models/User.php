@@ -75,14 +75,27 @@ class User extends Authenticatable
         return $this->roles()->save($role);
     }
 
+    /**
+     * Determine if the user has the given role(s).
+     * When $role is a collection of Role models (e.g. from Permission->roles),
+     * comparison is done by role id so that policy checks work correctly.
+     *
+     * @param  string|\Illuminate\Support\Collection  $role  Role name or collection of Role models
+     * @return bool
+     */
     public function hasRole($role)
     {
-        $roles = $this->getEffectiveRoles();
+        $userRoles = $this->getEffectiveRoles();
         if (is_string($role)) {
-            return $roles->contains('name', $role);
+            return $userRoles->contains('name', $role);
         }
 
-        return (bool) $role->intersect($roles)->count();
+        // Policies pass $permission->roles (collection of Role models). intersect() compares
+        // by object identity, so we must compare by id for authorization to work.
+        $allowedRoleIds = $role->pluck('id');
+        $userRoleIds = $userRoles->pluck('id');
+
+        return $allowedRoleIds->intersect($userRoleIds)->isNotEmpty();
     }
 
     public function assignedWarehouses()

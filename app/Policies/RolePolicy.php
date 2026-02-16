@@ -30,7 +30,7 @@ class RolePolicy
     {
         $permission = Permission::where('name', 'permissions_view')->first();
 
-        return $user->hasRole($permission->roles);
+        return $permission && $user->hasRole($permission->roles);
     }
 
     /**
@@ -42,7 +42,7 @@ class RolePolicy
     {
         $permission = Permission::where('name', 'permissions_add')->first();
 
-        return $user->hasRole($permission->roles);
+        return $permission && $user->hasRole($permission->roles);
     }
 
     /**
@@ -55,7 +55,7 @@ class RolePolicy
     {
         $permission = Permission::where('name', 'permissions_edit')->first();
 
-        return $user->hasRole($permission->roles);
+        return $permission && $user->hasRole($permission->roles);
     }
 
     /**
@@ -68,7 +68,7 @@ class RolePolicy
     {
         $permission = Permission::where('name', 'permissions_delete')->first();
 
-        return $user->hasRole($permission->roles);
+        return $permission && $user->hasRole($permission->roles);
     }
 
     /**
