@@ -7,10 +7,24 @@ use App\Models\Role;
 use App\utils\helpers;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class PermissionsController extends BaseController
 {
+    /**
+     * Sincroniza la secuencia de PostgreSQL para permission_role.id después de sync().
+     * Evita "Unique violation permission_role_pkey" cuando la secuencia queda por detrás del MAX(id).
+     */
+    private function syncPermissionRoleSequence(): void
+    {
+        if (DB::getDriverName() !== 'pgsql') {
+            return;
+        }
+        DB::statement(
+            "SELECT setval(pg_get_serial_sequence('permission_role', 'id'), COALESCE((SELECT MAX(id) FROM permission_role), 1))"
+        );
+    }
     // ----------- GET ALL Roles --------------\\
 
     public function index(Request $request)
@@ -61,6 +75,8 @@ class PermissionsController extends BaseController
 
             \DB::transaction(function () use ($request) {
 
+                $this->syncPermissionRoleSequence();
+
                 // -- Create New Role
                 $Role = new Role;
                 $Role->name = $request['role']['name'];
@@ -79,7 +95,6 @@ class PermissionsController extends BaseController
                 // Usar sync() en lugar de detach() + attach() para evitar problemas con duplicados
                 // sync() elimina relaciones que no están en el array y agrega las nuevas de forma segura
                 $role->permissions()->sync($data);
-
             }, 10);
 
             return response()->json(['success' => true]);
@@ -116,6 +131,8 @@ class PermissionsController extends BaseController
 
             \DB::transaction(function () use ($request, $id) {
 
+                $this->syncPermissionRoleSequence();
+
                 Role::whereId($id)->update($request['role']);
 
                 $role = Role::findOrFail($id);
@@ -128,7 +145,6 @@ class PermissionsController extends BaseController
                 // Usar sync() en lugar de detach() + attach() para evitar problemas con duplicados
                 // sync() elimina relaciones que no están en el array y agrega las nuevas de forma segura
                 $role->permissions()->sync($data);
-
             }, 10);
 
             return response()->json(['success' => true]);
