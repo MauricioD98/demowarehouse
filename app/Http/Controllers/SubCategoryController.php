@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\SubCategory;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
 
 class SubCategoryController extends BaseController
 {
@@ -134,12 +136,16 @@ class SubCategoryController extends BaseController
 
     /**
      * DELETE /subcategories/{id}
+     * Products that used this subcategory are unlinked (sub_category_id set to null) so the FK allows deletion.
      */
     public function destroy(Request $request, $id)
     {
         $this->authorizeForUser($request->user('api'), 'delete', SubCategory::class);
 
-        SubCategory::whereId($id)->delete();
+        DB::transaction(function () use ($id) {
+            Product::where('sub_category_id', $id)->update(['sub_category_id' => null]);
+            SubCategory::whereId($id)->delete();
+        });
 
         return response()->json(['success' => true]);
     }
@@ -147,15 +153,21 @@ class SubCategoryController extends BaseController
     /**
      * POST /subcategories/delete/by_selection
      * Body: { selectedIds: [1,2,3] }
+     * Products that used any of these subcategories are unlinked so the FK allows deletion.
      */
     public function delete_by_selection(Request $request)
     {
         $this->authorizeForUser($request->user('api'), 'delete', SubCategory::class);
 
-        $selectedIds = (array) $request->input('selectedIds', []);
-        if (! empty($selectedIds)) {
-            SubCategory::whereIn('id', $selectedIds)->delete();
+        $selectedIds = array_filter(array_map('intval', (array) $request->input('selectedIds', [])));
+        if (empty($selectedIds)) {
+            return response()->json(['success' => true]);
         }
+
+        DB::transaction(function () use ($selectedIds) {
+            Product::whereIn('sub_category_id', $selectedIds)->update(['sub_category_id' => null]);
+            SubCategory::whereIn('id', $selectedIds)->delete();
+        });
 
         return response()->json(['success' => true]);
     }

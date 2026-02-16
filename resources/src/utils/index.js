@@ -666,10 +666,29 @@ const getDateFormat = (store = null) => {
   return 'YYYY-MM-DD'; // Default format
 };
 
+/**
+ * Extract error message from Laravel/axios error response.
+ * Use in catch blocks to show backend message in toasts/swal.
+ * @param {*} err - Axios error (err.response.data.message or err.response.data.errors)
+ * @param {string} fallback - Default message when none found
+ * @returns {string}
+ */
+const getBackendErrorMessage = (err, fallback = 'Invalid data') => {
+  const d = err?.response?.data;
+  if (!d) return fallback;
+  if (d.message && typeof d.message === 'string') return d.message;
+  if (d.errors && typeof d.errors === 'object') {
+    const first = Object.values(d.errors).flat().find(Boolean);
+    if (first) return first;
+  }
+  return fallback;
+};
+
 export default {
   toggleFullScreen,
   offlinePos,
   shadowStock,
   formatDisplayDate,
-  getDateFormat
+  getDateFormat,
+  getBackendErrorMessage
 };

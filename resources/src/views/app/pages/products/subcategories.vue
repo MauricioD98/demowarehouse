@@ -168,6 +168,17 @@ export default {
   methods: {
     getState({ dirty, validated, valid = null }) { return dirty || validated ? valid : null },
     toast(variant, msg, title) { this.$root.$bvToast.toast(msg, { title, variant, solid: true }) },
+    /** Extract error message from backend response (Laravel: message or first validation error). */
+    getBackendErrorMessage(err, fallback) {
+      const d = err?.response?.data
+      if (!d) return fallback || this.$t('InvalidData')
+      if (d.message && typeof d.message === 'string') return d.message
+      if (d.errors && typeof d.errors === 'object') {
+        const first = Object.values(d.errors).flat().find(Boolean)
+        if (first) return first
+      }
+      return fallback || this.$t('InvalidData')
+    },
     updateParams(patch) { this.serverParams = { ...this.serverParams, ...patch } },
 
     // Table events
@@ -277,7 +288,7 @@ export default {
         this.$bvModal.hide('New_SubCategory')
         this.fetchRows()
       } catch (e) {
-        this.toast('danger', this.$t('InvalidData'), this.$t('Failed'))
+        this.toast('danger', this.getBackendErrorMessage(e), this.$t('Failed'))
       } finally {
         this.submitProcessing = false
         NProgress.done()
@@ -303,7 +314,8 @@ export default {
         await this.$swal(this.$t('Delete_Deleted'), this.$t('Deleted_in_successfully'), 'success')
         this.fetchRows()
       } catch (e) {
-        this.$swal(this.$t('Delete_Failed'), this.$t('Delete_Therewassomethingwronge'), 'warning')
+        const msg = this.getBackendErrorMessage(e, this.$t('Delete_Therewassomethingwronge'))
+        this.$swal(this.$t('Delete_Failed'), msg, 'error')
       } finally {
         NProgress.done()
       }
@@ -331,7 +343,8 @@ export default {
         this.selectedIds = []
         this.fetchRows()
       } catch (e) {
-        this.$swal(this.$t('Delete_Failed'), this.$t('Delete_Therewassomethingwronge'), 'warning')
+        const msg = this.getBackendErrorMessage(e, this.$t('Delete_Therewassomethingwronge'))
+        this.$swal(this.$t('Delete_Failed'), msg, 'error')
       } finally {
         NProgress.done()
       }
