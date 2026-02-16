@@ -76,14 +76,15 @@ class StoreFrontController extends Controller
             END
         )";
 
-        // tax_method: '2' => Inclusive (leave as-is), otherwise treat as Exclusive and add tax
-        $taxRateExpr = 'COALESCE(products.TaxNet, 0)';
-        $finalExpr = "ROUND(
+        // tax_method: '2' => Inclusive (leave as-is), otherwise treat as Exclusive and add tax (column is tax_net)
+        $taxRateExpr = 'COALESCE(products.tax_net, 0)';
+        // PostgreSQL: ROUND(double, int) does not exist; cast to numeric for ROUND(..., 2)
+        $finalExpr = "ROUND((
             CASE
                 WHEN products.tax_method = '2' THEN $afterDiscountExpr
                 ELSE $afterDiscountExpr * (1 + ($taxRateExpr/100))
-            END, 2
-        )";
+            END
+        )::numeric, 2)";
 
         // 3) Build blocks
         $blocks = [];
@@ -256,14 +257,15 @@ class StoreFrontController extends Controller
             END
         )";
 
-        // tax_method: '1'=Exclusive, '2'=Inclusive (varchar);  TaxNet
-        $taxRateExpr = 'COALESCE(products.TaxNet, 0)';
-        $finalExpr = "ROUND(
+        // tax_method: '1'=Exclusive, '2'=Inclusive (varchar); column is tax_net
+        $taxRateExpr = 'COALESCE(products.tax_net, 0)';
+        // PostgreSQL: ROUND(double, int) does not exist; cast to numeric for ROUND(..., 2)
+        $finalExpr = "ROUND((
             CASE
                 WHEN products.tax_method = '2' THEN $afterDiscountExpr
                 ELSE $afterDiscountExpr * (1 + ($taxRateExpr/100))
-            END, 2
-        )";
+            END
+        )::numeric, 2)";
 
         $products = Product::query()
             ->where('deleted_at', '=', null)

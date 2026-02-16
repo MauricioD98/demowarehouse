@@ -45,10 +45,10 @@ class CheckoutController extends Controller
             return response()->json(['error' => 'No warehouse configured.'], 422);
         }
 
-        // Preload product meta (TaxNet/discount/flags) and verify all exist
+        // Preload product meta (tax_net/discount/flags) and verify all exist
         $ids = collect($data['items'])->pluck('product_id')->unique()->values();
         $products = Product::whereIn('id', $ids)
-            ->get(['id', 'TaxNet', 'discount', 'discount_method', 'tax_method'])
+            ->get(['id', 'tax_net', 'discount', 'discount_method', 'tax_method'])
             ->keyBy('id');
 
         if ($products->count() !== $ids->count()) {
