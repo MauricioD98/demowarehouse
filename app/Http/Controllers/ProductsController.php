@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Intervention\Image\ImageManagerStatic as Image;
@@ -2307,7 +2308,11 @@ class ProductsController extends BaseController
                 return response()->json(['status' => false, 'message' => "Missing category name for product \"$name\"."]);
             }
 
-            $category = Category::firstOrCreate(['name' => $categoryName]);
+            $categoryCode = Str::slug($categoryName) ?: ('cat-' . time());
+            $category = Category::firstOrCreate(
+                ['name' => $categoryName],
+                ['code' => $categoryCode]
+            );
 
             $unit = Unit::where('ShortName', $unitName)->orWhere('name', $unitName)->first();
             if (! $unit) {
@@ -2611,8 +2616,13 @@ class ProductsController extends BaseController
                 foreach ($groups as $parentCode => $bundle) {
                     $p = $bundle['parent'];
 
-                    // Category (create if missing)
-                    $category = Category::firstOrCreate(['name' => trim($p['category'])]);
+                    // Category (create if missing; code required by DB)
+                    $catName = trim($p['category']);
+                    $catCode = Str::slug($catName) ?: ('cat-' . time());
+                    $category = Category::firstOrCreate(
+                        ['name' => $catName],
+                        ['code' => $catCode]
+                    );
 
                     // Unit (must exist)
                     $unit = Unit::where('ShortName', $p['unit'])->orWhere('name', $p['unit'])->first();
