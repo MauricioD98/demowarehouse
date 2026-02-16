@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasTaxNetAttribute;
 use Illuminate\Database\Eloquent\Model;
 
 class PurchaseReturnDetails extends Model
 {
+    use HasTaxNetAttribute;
+
     protected $guarded = ['id'];
 
     protected $fillable = [
         'product_id', 'purchase_return_id', 'purchase_unit_id', 'total', 'quantity', 'product_variant_id',
-        'cost', 'TaxNet', 'discount', 'discount_method', 'tax_method',
+        'cost', 'tax_net', 'discount', 'discount_method', 'tax_method',
     ];
 
     protected $casts = [
@@ -21,7 +24,7 @@ class PurchaseReturnDetails extends Model
         'product_id' => 'integer',
         'product_variant_id' => 'integer',
         'cost' => 'double',
-        'TaxNet' => 'double',
+        'tax_net' => 'double',
         'discount' => 'double',
     ];
 

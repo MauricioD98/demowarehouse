@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasTaxNetAttribute;
 use Illuminate\Database\Eloquent\Model;
 
 class Sale extends Model
 {
+    use HasTaxNetAttribute;
+
     protected $dates = ['deleted_at'];
 
     protected $fillable = [
-        'date', 'Ref', 'is_pos', 'client_id', 'GrandTotal', 'qte_retturn', 'TaxNet', 'tax_rate', 'notes',
+        'date', 'Ref', 'is_pos', 'client_id', 'GrandTotal', 'qte_retturn', 'tax_net', 'tax_rate', 'notes',
         'total_retturn', 'warehouse_id', 'user_id', 'statut', 'discount', 'discount_Method', 'shipping', 'time', 'used_points', 'earned_points', 'discount_from_points',
         'paid_amount', 'payment_statut', 'created_at', 'updated_at', 'deleted_at', 'shipping_status', 'subscription_id',
         // Idempotency key for POS sales; nullable for legacy rows and non-POS flows
@@ -31,7 +34,7 @@ class Sale extends Model
         'subscription_id' => 'integer',
         'discount' => 'double',
         'shipping' => 'double',
-        'TaxNet' => 'double',
+        'tax_net' => 'double',
         'tax_rate' => 'double',
         'paid_amount' => 'double',
         'used_points' => 'double',

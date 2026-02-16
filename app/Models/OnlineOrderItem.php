@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasTaxNetAttribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class OnlineOrderItem extends Model
 {
+    use HasTaxNetAttribute;
+
     protected $table = 'online_order_items';
 
     protected $fillable = [
@@ -16,7 +19,7 @@ class OnlineOrderItem extends Model
         'qty',
         'price',
         'line_total',
-        'TaxNet',
+        'tax_net',
         'discount',
         'discount_method',
         'tax_method',
@@ -29,7 +32,7 @@ class OnlineOrderItem extends Model
         'qty' => 'decimal:3',
         'price' => 'decimal:2',
         'line_total' => 'decimal:2',
-        'TaxNet' => 'double',
+        'tax_net' => 'double',
         'discount' => 'double',
     ];
 

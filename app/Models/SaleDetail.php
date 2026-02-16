@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasTaxNetAttribute;
 use Illuminate\Database\Eloquent\Model;
 
 class SaleDetail extends Model
 {
+    use HasTaxNetAttribute;
+
     protected $guarded = ['id'];
 
     protected $fillable = [
         'date', 'sale_id', 'sale_unit_id', 'quantity', 'product_id', 'total', 'product_variant_id',
-        'price', 'TaxNet', 'discount', 'discount_method', 'tax_method', 'price_type',
+        'price', 'tax_net', 'discount', 'discount_method', 'tax_method', 'price_type',
     ];
 
     protected $casts = [
@@ -22,7 +25,7 @@ class SaleDetail extends Model
         'product_id' => 'integer',
         'product_variant_id' => 'integer',
         'price' => 'double',
-        'TaxNet' => 'double',
+        'tax_net' => 'double',
         'discount' => 'double',
         'price_type' => 'string',
     ];

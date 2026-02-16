@@ -2,15 +2,18 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasTaxNetAttribute;
 use Illuminate\Database\Eloquent\Model;
 
 class Quotation extends Model
 {
+    use HasTaxNetAttribute;
+
     protected $dates = ['deleted_at'];
 
     protected $fillable = [
         'date', 'Ref', 'client_id', 'GrandTotal', 'warehouse_id', 'user_id', 'statut', 'time',
-        'notes', 'discount', 'shipping', 'TaxNet', 'tax_rate', 'created_at', 'updated_at', 'deleted_at',
+        'notes', 'discount', 'shipping', 'tax_net', 'tax_rate', 'created_at', 'updated_at', 'deleted_at',
     ];
 
     protected $casts = [
@@ -20,7 +23,7 @@ class Quotation extends Model
         'warehouse_id' => 'integer',
         'discount' => 'double',
         'shipping' => 'double',
-        'TaxNet' => 'double',
+        'tax_net' => 'double',
         'tax_rate' => 'double',
 
     ];

@@ -2,22 +2,25 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasTaxNetAttribute;
 use Illuminate\Database\Eloquent\Model;
 
 class QuotationDetail extends Model
 {
+    use HasTaxNetAttribute;
+
     protected $guarded = ['id'];
 
     protected $fillable = [
         'product_id', 'quotation_id', 'sale_unit_id', 'total', 'quantity', 'product_variant_id',
-        'price', 'TaxNet', 'discount', 'discount_method', 'tax_method',
+        'price', 'tax_net', 'discount', 'discount_method', 'tax_method',
     ];
 
     protected $casts = [
         'total' => 'double',
         'quantity' => 'double',
         'price' => 'double',
-        'TaxNet' => 'double',
+        'tax_net' => 'double',
         'discount' => 'double',
         'quotation_id' => 'integer',
         'sale_unit_id' => 'integer',

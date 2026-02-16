@@ -2,23 +2,26 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasTaxNetAttribute;
 use Illuminate\Database\Eloquent\Model;
 
 class TransferDetail extends Model
 {
+    use HasTaxNetAttribute;
+
     protected $table = 'transfer_details';
 
     protected $guarded = ['id'];
 
     protected $fillable = [
         'transfer_id', 'quantity', 'purchase_unit_id', 'product_id', 'total', 'product_variant_id',
-        'cost', 'TaxNet', 'discount', 'discount_method', 'tax_method',
+        'cost', 'tax_net', 'discount', 'discount_method', 'tax_method',
     ];
 
     protected $casts = [
         'total' => 'double',
         'cost' => 'double',
-        'TaxNet' => 'double',
+        'tax_net' => 'double',
         'discount' => 'double',
         'quantity' => 'double',
         'transfer_id' => 'integer',

@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasTaxNetAttribute;
 use Illuminate\Database\Eloquent\Model;
 
 class Transfer extends Model
 {
+    use HasTaxNetAttribute;
+
     protected $table = 'transfers';
 
     protected $dates = ['deleted_at'];
@@ -14,7 +17,7 @@ class Transfer extends Model
 
     protected $fillable = [
         'date', 'user_id', 'from_warehouse_id', 'to_warehouse_id', 'time',
-        'items', 'statut', 'approval_status', 'notes', 'GrandTotal', 'discount', 'shipping', 'TaxNet', 'tax_rate',
+        'items', 'statut', 'approval_status', 'notes', 'GrandTotal', 'discount', 'shipping', 'tax_net', 'tax_rate',
         'created_at', 'updated_at', 'deleted_at',
     ];
 
@@ -26,7 +29,7 @@ class Transfer extends Model
         'GrandTotal' => 'double',
         'discount' => 'double',
         'shipping' => 'double',
-        'TaxNet' => 'double',
+        'tax_net' => 'double',
         'tax_rate' => 'double',
 
     ];

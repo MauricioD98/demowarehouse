@@ -5902,7 +5902,7 @@ class ReportController extends BaseController
         $totalRows = (clone $base)->count();
 
         $select = [
-            'd.id', 'd.Ref', 'd.date', 'd.created_at', 'd.GrandTotal', 'd.TaxNet', 'd.tax_rate', 'd.discount', 'd.shipping',
+            'd.id', 'd.Ref', 'd.date', 'd.created_at', 'd.GrandTotal', 'd.tax_net', 'd.tax_rate', 'd.discount', 'd.shipping',
             'c.name as client_name', 'w.name as warehouse_name', 'u.username as user_name',
             DB::raw("$ageExpr as age_days"),
         ];
@@ -5918,7 +5918,7 @@ class ReportController extends BaseController
             'date' => 'd.date',
             'Ref' => 'd.Ref',
             'GrandTotal' => 'd.GrandTotal',
-            'TaxNet' => 'd.TaxNet',
+            'TaxNet' => 'd.tax_net',
             'discount' => 'd.discount',
             'shipping' => 'd.shipping',
         ];
@@ -5947,7 +5947,7 @@ class ReportController extends BaseController
                 'warehouse' => $r->warehouse_name,
                 'user' => $r->user_name,
                 'GrandTotal' => (float) $r->GrandTotal,
-                'TaxNet' => (float) $r->TaxNet,
+                'TaxNet' => (float) ($r->tax_net ?? 0),
                 'tax_rate' => (float) $r->tax_rate,
                 'discount' => (float) $r->discount,
                 'shipping' => (float) $r->shipping,
@@ -6040,7 +6040,7 @@ class ReportController extends BaseController
             THEN
                 (COALESCE(s.discount,0) / 100.0)
                 * (
-                    (COALESCE(s.GrandTotal,0) - COALESCE(s.TaxNet,0) - COALESCE(s.shipping,0) + COALESCE(s.discount_from_points,0))
+                    (COALESCE(s.GrandTotal,0) - COALESCE(s.tax_net,0) - COALESCE(s.shipping,0) + COALESCE(s.discount_from_points,0))
                 )
                 / NULLIF(1 - (COALESCE(s.discount,0) / 100.0), 0)
             ELSE COALESCE(s.discount,0)
@@ -6193,7 +6193,7 @@ class ReportController extends BaseController
         END
         ";
         $unitAfterDiscExpr = "GREATEST( COALESCE(sd.price,0) - ($discountPerUnitExpr), 0 )";
-        $rateExpr = 'COALESCE(sd.TaxNet,0) / 100';
+        $rateExpr = 'COALESCE(sd.tax_net,0) / 100';
         $taxPerUnitExpr = "($unitAfterDiscExpr) * ($rateExpr)";
         $basePerUnitExpr = "
         CASE

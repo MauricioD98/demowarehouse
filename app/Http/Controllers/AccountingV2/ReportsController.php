@@ -191,7 +191,7 @@ class ReportsController extends Controller
                 $q->where('date', '<=', $to);
             }
             $sales = (float) ($q->sum('GrandTotal') ?? 0);
-            $outputTax = (float) ($q->sum('TaxNet') ?? 0);
+            $outputTax = (float) ($q->sum('tax_net') ?? 0);
         }
 
         // Calculate Sale Returns (Reduce Output Tax)
@@ -206,7 +206,7 @@ class ReportsController extends Controller
                 $q->where('date', '<=', $to);
             }
             $saleReturns = (float) ($q->sum('GrandTotal') ?? 0);
-            $saleReturnTax = (float) ($q->sum('TaxNet') ?? 0);
+            $saleReturnTax = (float) ($q->sum('tax_net') ?? 0);
         }
 
         // Calculate Purchases (Input Tax)
@@ -221,7 +221,7 @@ class ReportsController extends Controller
                 $q->where('date', '<=', $to);
             }
             $purchases = (float) ($q->sum('GrandTotal') ?? 0);
-            $inputTax = (float) ($q->sum('TaxNet') ?? 0);
+            $inputTax = (float) ($q->sum('tax_net') ?? 0);
         }
 
         // Calculate Purchase Returns (Reduce Input Tax)
@@ -236,7 +236,7 @@ class ReportsController extends Controller
                 $q->where('date', '<=', $to);
             }
             $purchaseReturns = (float) ($q->sum('GrandTotal') ?? 0);
-            $purchaseReturnTax = (float) ($q->sum('TaxNet') ?? 0);
+            $purchaseReturnTax = (float) ($q->sum('tax_net') ?? 0);
         }
 
         // Net calculations (sales - returns)

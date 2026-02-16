@@ -2,16 +2,19 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasTaxNetAttribute;
 use Illuminate\Database\Eloquent\Model;
 
 class SaleReturn extends Model
 {
+    use HasTaxNetAttribute;
+
     protected $dates = ['deleted_at'];
 
     protected $fillable = [
         'date', 'Ref', 'GrandTotal', 'time',
         'user_id', 'discount', 'shipping',
-        'warehouse_id', 'client_id', 'sale_id', 'notes', 'TaxNet', 'tax_rate', 'statut',
+        'warehouse_id', 'client_id', 'sale_id', 'notes', 'tax_net', 'tax_rate', 'statut',
         'paid_amount', 'payment_statut', 'created_at', 'updated_at', 'deleted_at',
     ];
 
@@ -23,7 +26,7 @@ class SaleReturn extends Model
         'warehouse_id' => 'integer',
         'discount' => 'double',
         'shipping' => 'double',
-        'TaxNet' => 'double',
+        'tax_net' => 'double',
         'tax_rate' => 'double',
         'paid_amount' => 'double',
     ];
