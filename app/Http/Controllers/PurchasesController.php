@@ -219,7 +219,7 @@ class PurchasesController extends BaseController
                     'quantity' => $value['quantity'],
                     'cost' => $value['Unit_cost'],
                     'purchase_unit_id' => $value['purchase_unit_id'],
-                    'TaxNet' => $value['tax_percent'],
+                    'tax_net' => $value['tax_percent'],
                     'tax_method' => $value['tax_method'],
                     'discount' => $value['discount'],
                     'discount_method' => $value['discount_Method'],
@@ -416,7 +416,7 @@ class PurchasesController extends BaseController
                         $orderDetails['purchase_id'] = $id;
                         $orderDetails['cost'] = $prod_detail['Unit_cost'];
                         $orderDetails['purchase_unit_id'] = $prod_detail['purchase_unit_id'];
-                        $orderDetails['TaxNet'] = $prod_detail['tax_percent'];
+                        $orderDetails['tax_net'] = $prod_detail['tax_percent'];
                         $orderDetails['tax_method'] = $prod_detail['tax_method'];
                         $orderDetails['discount'] = $prod_detail['discount'];
                         $orderDetails['discount_method'] = $prod_detail['discount_Method'];
@@ -449,7 +449,7 @@ class PurchasesController extends BaseController
                     'warehouse_id' => $request['warehouse_id'],
                     'notes' => $request['notes'],
                     'tax_rate' => $request['tax_rate'],
-                    'TaxNet' => $request['TaxNet'],
+                    'tax_net' => $request['TaxNet'] ?? $request['tax_net'] ?? 0,
                     'discount' => $request['discount'],
                     'shipping' => $request['shipping'],
                     'statut' => $request['statut'],
@@ -1818,7 +1818,7 @@ class PurchasesController extends BaseController
                     'quantity' => $value['qty'],
                     'cost' => $product->cost,
                     'purchase_unit_id' => $product->unit_purchase_id,
-                    'TaxNet' => 0,
+                    'tax_net' => 0,
                     'tax_method' => 1,
                     'discount' => 0,
                     'discount_method' => 2,

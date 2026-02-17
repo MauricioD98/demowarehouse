@@ -91,6 +91,7 @@ class WarehouseController extends Controller
                                 'warehouse_id' => $Warehouse->id,
                                 'product_variant_id' => $product_variant->id,
                                 'manage_stock' => $product->type == 'is_service' ? 0 : 1,
+                                'qte' => 0,
                             ];
                         }
                     } else {
@@ -99,6 +100,7 @@ class WarehouseController extends Controller
                             'warehouse_id' => $Warehouse->id,
                             'product_variant_id' => null,
                             'manage_stock' => $product->type == 'is_service' ? 0 : 1,
+                            'qte' => 0,
                         ];
                     }
 

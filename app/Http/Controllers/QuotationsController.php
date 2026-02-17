@@ -185,7 +185,7 @@ class QuotationsController extends BaseController
                     'quantity' => $value['quantity'],
                     'sale_unit_id' => $value['sale_unit_id'] ? $value['sale_unit_id'] : null,
                     'price' => $value['Unit_price'],
-                    'TaxNet' => $value['tax_percent'],
+                    'tax_net' => $value['tax_percent'],
                     'tax_method' => $value['tax_method'],
                     'discount' => $value['discount'],
                     'discount_method' => $value['discount_Method'],
@@ -257,7 +257,7 @@ class QuotationsController extends BaseController
                 $QuoteDetail['product_id'] = $product_detail['product_id'];
                 $QuoteDetail['product_variant_id'] = $product_detail['product_variant_id'];
                 $QuoteDetail['price'] = $product_detail['Unit_price'];
-                $QuoteDetail['TaxNet'] = $product_detail['tax_percent'];
+                $QuoteDetail['tax_net'] = $product_detail['tax_percent'];
                 $QuoteDetail['tax_method'] = $product_detail['tax_method'];
                 $QuoteDetail['discount'] = $product_detail['discount'];
                 $QuoteDetail['discount_method'] = $product_detail['discount_Method'];
@@ -277,7 +277,7 @@ class QuotationsController extends BaseController
                 'statut' => $request['statut'],
                 'notes' => $request['notes'],
                 'tax_rate' => $request['tax_rate'],
-                'TaxNet' => $request['TaxNet'],
+                'tax_net' => $request['TaxNet'] ?? $request['tax_net'] ?? 0,
                 'date' => $request['date'],
                 'discount' => $request['discount'],
                 'shipping' => $request['shipping'],
