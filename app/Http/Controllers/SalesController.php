@@ -239,7 +239,7 @@ class SalesController extends BaseController
                     'sale_unit_id' => $value['sale_unit_id'] ? $value['sale_unit_id'] : null,
                     'quantity' => $value['quantity'],
                     'price' => $value['Unit_price'],
-                    'TaxNet' => $value['tax_percent'],
+                    'tax_net' => $value['tax_percent'],
                     'tax_method' => $value['tax_method'],
                     'discount' => $value['discount'],
                     'discount_method' => $value['discount_Method'],
@@ -582,7 +582,7 @@ class SalesController extends BaseController
                         $orderDetails['date'] = $request['date'];
                         $orderDetails['price'] = $prod_detail['Unit_price'];
                         $orderDetails['sale_unit_id'] = $prod_detail['sale_unit_id'];
-                        $orderDetails['TaxNet'] = $prod_detail['tax_percent'];
+                        $orderDetails['tax_net'] = $prod_detail['tax_percent'];
                         $orderDetails['tax_method'] = $prod_detail['tax_method'];
                         $orderDetails['discount'] = $prod_detail['discount'];
                         $orderDetails['discount_method'] = $prod_detail['discount_Method'];
@@ -724,7 +724,7 @@ class SalesController extends BaseController
                     'notes' => $request['notes'],
                     'statut' => $request['statut'],
                     'tax_rate' => $request['tax_rate'],
-                    'TaxNet' => $request['TaxNet'],
+                    'tax_net' => $request['TaxNet'] ?? $request['tax_net'] ?? 0,
                     'discount' => $request['discount'],
                     // Ensure order-level discount method stays in sync when editing
                     'discount_Method' => $request->has('discount_Method')

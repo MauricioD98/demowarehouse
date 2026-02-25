@@ -3056,11 +3056,14 @@ export default {
     CalculTotal() {
       this.total = 0;
       for (var i = 0; i < this.details.length; i++) {
-        var tax = this.details[i].taxe * this.details[i].quantity;
+        const qty = Number(this.details[i].quantity) || 0;
+        const netPrice = Number(this.details[i].Net_price) || 0;
+        const taxe = Number(this.details[i].taxe) ?? Number(this.details[i].tax_price) ?? 0;
+        const tax = taxe * qty;
         this.details[i].subtotal = parseFloat(
-          this.details[i].quantity * this.details[i].Net_price + tax
+          (qty * netPrice + tax).toFixed(2)
         );
-        this.total = parseFloat(this.total + this.details[i].subtotal);
+        this.total = parseFloat((this.total + this.details[i].subtotal).toFixed(2));
       }
       // Calculate discount based on type (backward compatible: default to fixed if not set)
       const discountMethod = String(this.sale.discount_Method || '2');
@@ -3089,11 +3092,16 @@ export default {
       const total_without_discount = parseFloat(
         (this.total - discountAmount).toFixed(2)
       );
+
+      // Ensure tax_rate and shipping are valid numbers
+      const taxRate = Number(this.sale.tax_rate) || 0;
+      const shipping = Number(this.sale.shipping) || 0;
+
       this.sale.TaxNet = parseFloat(
-        (total_without_discount * this.sale.tax_rate) / 100
+        (total_without_discount * taxRate) / 100
       );
       this.GrandTotal = parseFloat(
-        total_without_discount + this.sale.TaxNet + this.sale.shipping
+        total_without_discount + this.sale.TaxNet + shipping
       );
     var grand_total =  this.GrandTotal.toFixed(2);
     this.GrandTotal = parseFloat(grand_total);
@@ -3193,7 +3201,7 @@ export default {
         this.product.retail_unit_price     = data.Unit_price;
         this.product.wholesale_unit_price  = data.Unit_price_wholesale;
         this.product.price_type            = 'retail';
-        this.product.taxe               = data.tax_price;
+        this.product.taxe               = (data.taxe != null && data.taxe !== '') ? Number(data.taxe) : ((data.tax_price != null && data.tax_price !== '') ? Number(data.tax_price) : 0);
         this.product.tax_method         = data.tax_method;
         this.product.tax_percent        = data.tax_percent;
         this.product.unitSale           = data.unitSale;
@@ -3282,12 +3290,14 @@ export default {
               const taxe = (unitPrice - detail.DiscountNet) * (taxPercent / 100);
               detail.Net_price = parseFloat(net.toFixed(2));
               detail.taxe = parseFloat(taxe.toFixed(2));
+              detail.tax_price = detail.taxe;
               detail.Total_price = parseFloat((net + taxe).toFixed(2));
             } else {
               // Tax inclusive
               const taxe = (unitPrice - detail.DiscountNet) * (taxPercent / 100);
               const net = unitPrice - taxe - detail.DiscountNet;
               detail.taxe = parseFloat(taxe.toFixed(2));
+              detail.tax_price = detail.taxe;
               detail.Net_price = parseFloat(net.toFixed(2));
               detail.Total_price = parseFloat((net + taxe).toFixed(2));
             }
@@ -3494,6 +3504,8 @@ export default {
         }
       } catch(e) {}
       this.details.unshift(newItem);
+      this.CalculTotal();
+      this.$forceUpdate();
       setTimeout(() => {
         this.load_product = true;
       }, 300);

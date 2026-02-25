@@ -128,13 +128,13 @@ class TransferController extends BaseController
         \DB::transaction(function () use ($request) {
             $order = new Transfer;
 
-            $order->date = $request->transfer['date'];
+            $order->date = $this->normalizeTransferDate($request->transfer['date'] ?? null);
             $order->Ref = $this->getNumberOrder();
             $order->from_warehouse_id = $request->transfer['from_warehouse'];
             $order->to_warehouse_id = $request->transfer['to_warehouse'];
             $order->items = count($request['details']);
             $order->tax_rate = $request->transfer['tax_rate'] ? $request->transfer['tax_rate'] : 0;
-            $order->TaxNet = $request->transfer['TaxNet'] ? $request->transfer['TaxNet'] : 0;
+            $order->tax_net = $request->transfer['TaxNet'] ?? $request->transfer['tax_net'] ?? 0;
             $order->discount = $request->transfer['discount'] ? $request->transfer['discount'] : 0;
             $order->shipping = $request->transfer['shipping'] ? $request->transfer['shipping'] : 0;
             $order->statut = $request->transfer['statut'];
@@ -265,7 +265,7 @@ class TransferController extends BaseController
                 $orderDetails['product_id'] = $value['product_id'];
                 $orderDetails['product_variant_id'] = $value['product_variant_id'];
                 $orderDetails['cost'] = $value['Unit_cost'];
-                $orderDetails['TaxNet'] = $value['tax_percent'];
+                $orderDetails['tax_net'] = $value['tax_percent'];
                 $orderDetails['tax_method'] = $value['tax_method'];
                 $orderDetails['discount'] = $value['discount'];
                 $orderDetails['discount_method'] = $value['discount_Method'];
@@ -552,7 +552,7 @@ class TransferController extends BaseController
                     $TransDetail['product_id'] = $product_detail['product_id'];
                     $TransDetail['product_variant_id'] = $product_detail['product_variant_id'];
                     $TransDetail['cost'] = $product_detail['Unit_cost'];
-                    $TransDetail['TaxNet'] = $product_detail['tax_percent'];
+                    $TransDetail['tax_net'] = $product_detail['tax_percent'];
                     $TransDetail['tax_method'] = $product_detail['tax_method'];
                     $TransDetail['discount'] = $product_detail['discount'];
                     $TransDetail['discount_method'] = $product_detail['discount_Method'];
@@ -569,12 +569,12 @@ class TransferController extends BaseController
             $current_Transfer->update([
                 'to_warehouse_id' => $Trans['to_warehouse'],
                 'from_warehouse_id' => $Trans['from_warehouse'],
-                'date' => $Trans['date'],
+                'date' => $this->normalizeTransferDate($Trans['date'] ?? null),
                 'notes' => $Trans['notes'],
                 'statut' => $Trans['statut'],
                 'items' => count($request['details']),
                 'tax_rate' => $Trans['tax_rate'] ? $Trans['tax_rate'] : 0,
-                'TaxNet' => $Trans['TaxNet'] ? $Trans['TaxNet'] : 0,
+                'tax_net' => $Trans['TaxNet'] ?? $Trans['tax_net'] ?? 0,
                 'discount' => $Trans['discount'] ? $Trans['discount'] : 0,
                 'shipping' => $Trans['shipping'] ? $Trans['shipping'] : 0,
                 'GrandTotal' => $request['GrandTotal'],
@@ -1423,6 +1423,22 @@ class TransferController extends BaseController
                     }
                 }
             }
+        }
+    }
+
+    /**
+     * Normalize date for PostgreSQL: ensures valid Y-m-d format.
+     * Returns null if input is empty/invalid (caller may fallback).
+     */
+    private function normalizeTransferDate($value)
+    {
+        if ($value === null || $value === '' || $value === 'null' || $value === 'undefined') {
+            return now()->format('Y-m-d');
+        }
+        try {
+            return Carbon::parse($value)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return now()->format('Y-m-d');
         }
     }
 }

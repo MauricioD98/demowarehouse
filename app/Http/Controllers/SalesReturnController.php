@@ -179,14 +179,14 @@ class SalesReturnController extends BaseController
         \DB::transaction(function () use ($request) {
             $order = new SaleReturn;
 
-            $order->date = $request->date;
+            $order->date = $this->normalizeReturnDate($request->date ?? null);
             $order->time = now()->toTimeString();
             $order->Ref = $this->getNumberOrder();
             $order->client_id = $request->client_id;
             $order->sale_id = $request->sale_id;
             $order->warehouse_id = $request->warehouse_id;
             $order->tax_rate = $request->tax_rate;
-            $order->TaxNet = $request->TaxNet;
+            $order->tax_net = $request->TaxNet ?? $request->tax_net ?? 0;
             $order->discount = $request->discount;
             $order->shipping = $request->shipping;
             $order->GrandTotal = $request->GrandTotal;
@@ -206,7 +206,7 @@ class SalesReturnController extends BaseController
                     'quantity' => $value['quantity'],
                     'price' => $value['Unit_price'],
                     'sale_unit_id' => $value['sale_unit_id'],
-                    'TaxNet' => $value['tax_percent'],
+                    'tax_net' => $value['tax_percent'],
                     'tax_method' => $value['tax_method'],
                     'discount' => $value['discount'],
                     'discount_method' => $value['discount_Method'],
@@ -397,7 +397,7 @@ class SalesReturnController extends BaseController
                     $orderDetails['sale_unit_id'] = $product_detail['sale_unit_id'];
                     $orderDetails['quantity'] = $product_detail['quantity'];
                     $orderDetails['price'] = $product_detail['Unit_price'];
-                    $orderDetails['TaxNet'] = $product_detail['tax_percent'];
+                    $orderDetails['tax_net'] = $product_detail['tax_percent'];
                     $orderDetails['tax_method'] = $product_detail['tax_method'];
                     $orderDetails['discount'] = $product_detail['discount'];
                     $orderDetails['discount_method'] = $product_detail['discount_Method'];
@@ -425,11 +425,11 @@ class SalesReturnController extends BaseController
             }
 
             $current_SaleReturn->update([
-                'date' => $request['date'],
+                'date' => $request->has('date') ? $this->normalizeReturnDate($request['date'] ?? null) : $current_SaleReturn->date,
                 'notes' => $request['notes'],
                 'statut' => $request['statut'],
                 'tax_rate' => $request['tax_rate'],
-                'TaxNet' => $request['TaxNet'],
+                'tax_net' => $request['TaxNet'] ?? $request['tax_net'] ?? 0,
                 'discount' => $request['discount'],
                 'shipping' => $request['shipping'],
                 'GrandTotal' => $request['GrandTotal'],
@@ -1198,5 +1198,20 @@ class SalesReturnController extends BaseController
             'details' => $details,
             'sale_return' => $Return_detail,
         ]);
+    }
+
+    /**
+     * Normalize date for PostgreSQL: ensures valid Y-m-d format.
+     */
+    private function normalizeReturnDate($value)
+    {
+        if ($value === null || $value === '' || $value === 'null' || $value === 'undefined') {
+            return now()->format('Y-m-d');
+        }
+        try {
+            return Carbon::parse($value)->format('Y-m-d');
+        } catch (\Exception $e) {
+            return now()->format('Y-m-d');
+        }
     }
 }

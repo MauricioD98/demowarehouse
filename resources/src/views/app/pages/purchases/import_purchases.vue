@@ -160,11 +160,14 @@
                  <!--Csv File -->
                 <b-col lg="4" md="4" sm="12" class="mb-3">
                   <b-form-group label="Choose Csv File *">
-                    <input type="file" @change="onFileSelected" label="Choose Csv File">
-                    <b-form-invalid-feedback
-                      id="File-feedback"
-                      class="d-block"
-                    >{{$t('field_must_be_in_csv_format')}}</b-form-invalid-feedback>
+                    <input
+                      ref="csvFileInput"
+                      type="file"
+                      accept=".csv"
+                      @change="onFileSelected"
+                    >
+                    <small class="form-text text-muted">{{ $t('field_must_be_in_csv_format') }}</small>
+                    <b-form-invalid-feedback v-if="fileError" class="d-block">{{ fileError }}</b-form-invalid-feedback>
                   </b-form-group>
                 </b-col>
 
@@ -175,6 +178,8 @@
                     variant="info"
                     size="sm"
                     block
+                    target="_blank"
+                    download
                   >{{ $t("Download_exemple") }}</b-button>
                 </b-col>
 
@@ -221,9 +226,9 @@ export default {
     return {
 
       isLoading: true,
-      SubmitProcessing:false,
-      Submit_Processing_detail:false,
-      data: new FormData(),
+      SubmitProcessing: false,
+      Submit_Processing_detail: false,
+      fileError: "",
       warehouses: [],
       suppliers: [],
       products: [],
@@ -252,8 +257,19 @@ export default {
 
     //------------------------------ Event Import Purchases -------------------------------\\
     onFileSelected(e) {
-      this.import_products = "";
-      let file = e.target.files[0];
+      this.fileError = "";
+      const file = e.target.files[0];
+      if (!file) {
+        this.import_products = "";
+        return;
+      }
+      const ext = (file.name || "").split(".").pop().toLowerCase();
+      if (ext !== "csv") {
+        this.fileError = this.$t("field_must_be_in_csv_format");
+        this.import_products = "";
+        e.target.value = "";
+        return;
+      }
       this.import_products = file;
     },
 
@@ -329,39 +345,54 @@ export default {
 
     //--------------------------------- Create Purchase -------------------------\\
     Create_Purchase() {
+        if (!this.import_products || !(this.import_products instanceof File)) {
+          this.makeToast(
+            "danger",
+            "Please select a CSV file.",
+            this.$t("Failed")
+          );
+          return;
+        }
+
         this.SubmitProcessing = true;
-        // Start the progress bar.
+        this.fileError = "";
         NProgress.start();
         NProgress.set(0.1);
-        var self = this;
-        self.data.append("date", self.purchase.date);
-        self.data.append("supplier_id", self.purchase.supplier_id);
-        self.data.append("warehouse_id", self.purchase.warehouse_id);
-        self.data.append("statut", self.purchase.statut);
-        self.data.append("notes", self.purchase.notes);
-        self.data.append("tax_rate", self.purchase.tax_rate);
-        self.data.append("discount", self.purchase.discount);
-        self.data.append("shipping", self.purchase.shipping);
-        self.data.append("products", self.import_products);
 
-        axios.post("store_import_purchases", self.data)
+        const formData = new FormData();
+        formData.append("date", this.purchase.date);
+        formData.append("supplier_id", this.purchase.supplier_id);
+        formData.append("warehouse_id", this.purchase.warehouse_id);
+        formData.append("statut", this.purchase.statut);
+        formData.append("notes", this.purchase.notes);
+        formData.append("tax_rate", this.purchase.tax_rate);
+        formData.append("discount", this.purchase.discount);
+        formData.append("shipping", this.purchase.shipping);
+        formData.append("products", this.import_products);
+
+        axios.post("store_import_purchases", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        })
           .then(response => {
-            // Complete the animation of theprogress bar.
             NProgress.done();
-
             this.makeToast(
               "success",
               this.$t("Successfully_Imported"),
               this.$t("Success")
             );
-
             this.SubmitProcessing = false;
             this.$router.push({ name: "index_purchases" });
           })
           .catch(error => {
             NProgress.done();
-            this.makeToast("danger", 'An error occurred while processing the CSV file.', this.$t("Failed"));
             this.SubmitProcessing = false;
+            const data = error.response && error.response.data;
+            const msg = (data && (data.msg || data.message)) || "An error occurred while processing the CSV file.";
+            this.makeToast("danger", msg, this.$t("Failed"));
+            if (data && data.errors) {
+              const firstError = Object.values(data.errors).flat()[0];
+              if (firstError) this.fileError = firstError;
+            }
           });
     },
 

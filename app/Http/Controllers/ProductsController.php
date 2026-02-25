@@ -422,6 +422,20 @@ class ProductsController extends BaseController
                     }
                     return is_numeric($value) ? (int) $value : null;
                 };
+                // Helper for nullable float (FormData sends "null" string, PostgreSQL rejects it for real columns)
+                $normalizeNullableFloat = function ($value) {
+                    if ($value === null || $value === '' || $value === 'null' || $value === 'NULL' || $value === 'undefined') {
+                        return null;
+                    }
+                    return is_numeric($value) ? (float) $value : null;
+                };
+                // Helper for nullable strings (FormData sends "null" string when value is null/undefined)
+                $normalizeNullableString = function ($value) {
+                    if ($value === null || $value === 'null' || $value === 'NULL' || $value === 'undefined') {
+                        return null;
+                    }
+                    return $value;
+                };
 
                 // -- Create New Product
                 $Product = new Product;
@@ -444,13 +458,13 @@ class ProductsController extends BaseController
 
                 // —————— Warranty & Guarantee ——————
                 $Product->warranty_period = $normalizeNullableInt($request['warranty_period'] ?? null);
-                $Product->warranty_unit = $request['warranty_unit'] ?? null;
-                $Product->warranty_terms = $request['warranty_terms'] ?? null;
+                $Product->warranty_unit = $normalizeNullableString($request['warranty_unit'] ?? null);
+                $Product->warranty_terms = $normalizeNullableString($request['warranty_terms'] ?? null);
 
                 // casted boolean
                 $Product->has_guarantee = filter_var($request['has_guarantee'], FILTER_VALIDATE_BOOLEAN);
                 $Product->guarantee_period = $normalizeNullableInt($request['guarantee_period'] ?? null);
-                $Product->guarantee_unit = $request['guarantee_unit'] ?? null;
+                $Product->guarantee_unit = $normalizeNullableString($request['guarantee_unit'] ?? null);
 
                 // -- check if type is_single
                 if ($request['type'] == 'is_single' || $request['type'] == 'is_combo') {
@@ -468,7 +482,7 @@ class ProductsController extends BaseController
                     $Product->unit_purchase_id = $unitPurchaseId ?? $Product->unit_id;
 
                     $Product->stock_alert = $request['stock_alert'] ? $request['stock_alert'] : 0;
-                    $Product->weight = $request['weight'] ? $request['weight'] : null;
+                    $Product->weight = $normalizeNullableFloat($request['weight'] ?? null);
 
                     $manage_stock = 1;
 
@@ -487,7 +501,7 @@ class ProductsController extends BaseController
                     $Product->unit_purchase_id = $unitPurchaseId ?? $Product->unit_id;
 
                     $Product->stock_alert = $request['stock_alert'] ? $request['stock_alert'] : 0;
-                    $Product->weight = $request['weight'] ? $request['weight'] : null;
+                    $Product->weight = $normalizeNullableFloat($request['weight'] ?? null);
 
                     $manage_stock = 1;
 
@@ -880,6 +894,20 @@ class ProductsController extends BaseController
                     }
                     return is_numeric($value) ? (int) $value : null;
                 };
+                // Helper for nullable float (FormData sends "null" string, PostgreSQL rejects it for real columns)
+                $normalizeNullableFloat = function ($value) {
+                    if ($value === null || $value === '' || $value === 'null' || $value === 'NULL' || $value === 'undefined') {
+                        return null;
+                    }
+                    return is_numeric($value) ? (float) $value : null;
+                };
+                // Helper for nullable strings (FormData sends "null" string when value is null/undefined)
+                $normalizeNullableString = function ($value) {
+                    if ($value === null || $value === 'null' || $value === 'NULL' || $value === 'undefined') {
+                        return null;
+                    }
+                    return $value;
+                };
 
                 $Product = Product::where('id', $id)
                     ->where('deleted_at', '=', null)
@@ -904,13 +932,13 @@ class ProductsController extends BaseController
 
                 // Warranty
                 $Product->warranty_period = $normalizeNullableInt($request['warranty_period'] ?? null);
-                $Product->warranty_unit = $request['warranty_unit'] ?? null;
-                $Product->warranty_terms = $request['warranty_terms'] ?? null;
+                $Product->warranty_unit = $normalizeNullableString($request['warranty_unit'] ?? null);
+                $Product->warranty_terms = $normalizeNullableString($request['warranty_terms'] ?? null);
 
                 // Guarantee
                 $Product->has_guarantee = filter_var($request['has_guarantee'], FILTER_VALIDATE_BOOLEAN);
                 $Product->guarantee_period = $normalizeNullableInt($request['guarantee_period'] ?? null);
-                $Product->guarantee_unit = $request['guarantee_unit'] ?? null;
+                $Product->guarantee_unit = $normalizeNullableString($request['guarantee_unit'] ?? null);
 
                 // -- check if type is_single
                 if ($request['type'] == 'is_single' || $request['type'] == 'is_combo') {
@@ -926,7 +954,7 @@ class ProductsController extends BaseController
                     $Product->unit_purchase_id = $unitPurchaseId ?? $Product->unit_id;
 
                     $Product->stock_alert = $request['stock_alert'] ? $request['stock_alert'] : 0;
-                    $Product->weight = $request['weight'] ? $request['weight'] : null;
+                    $Product->weight = $normalizeNullableFloat($request['weight'] ?? null);
                     $Product->is_variant = 0;
 
                     $manage_stock = 1;
@@ -946,7 +974,7 @@ class ProductsController extends BaseController
                     $Product->unit_purchase_id = $unitPurchaseId ?? $Product->unit_id;
 
                     $Product->stock_alert = $request['stock_alert'] ? $request['stock_alert'] : 0;
-                    $Product->weight = $request['weight'] ? $request['weight'] : null;
+                    $Product->weight = $normalizeNullableFloat($request['weight'] ?? null);
                     $Product->is_variant = 1;
                     $manage_stock = 1;
 

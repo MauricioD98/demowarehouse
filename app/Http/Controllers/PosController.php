@@ -104,13 +104,13 @@ class PosController extends BaseController
                 $order->Ref = app('App\Http\Controllers\SalesController')->getNumberOrder();
                 $order->client_id = $request->client_id;
                 $order->warehouse_id = $request->warehouse_id;
-                $order->tax_rate = $request->tax_rate;
-                $order->TaxNet = $request->TaxNet;
-                $order->discount = $request->discount;
+                $order->tax_rate = is_numeric($request->tax_rate) ? $request->tax_rate : 0;
+                $order->TaxNet = is_numeric($request->TaxNet) ? $request->TaxNet : 0;
+                $order->discount = is_numeric($request->discount) ? $request->discount : 0;
                 // Ensure discount_Method is saved correctly: '1' for percentage, '2' for fixed
                 $order->discount_Method = $request->has('discount_Method') ? (string) $request->discount_Method : '2';
-                $order->shipping = $request->shipping;
-                $order->GrandTotal = $request->GrandTotal;
+                $order->shipping = is_numeric($request->shipping) ? $request->shipping : 0;
+                $order->GrandTotal = is_numeric($request->GrandTotal) ? $request->GrandTotal : 0;
                 $order->notes = $request->notes;
                 $order->statut = 'completed';
                 $order->payment_statut = 'unpaid';
@@ -158,7 +158,7 @@ class PosController extends BaseController
                         'product_variant_id' => $value['product_variant_id'],
                         'total' => $value['subtotal'],
                         'price' => $value['Unit_price'],
-                        'TaxNet' => $value['tax_percent'],
+                        'tax_net' => $value['tax_percent'],
                         'tax_method' => $value['tax_method'],
                         'discount' => $value['discount'],
                         'discount_method' => $value['discount_Method'],
@@ -771,13 +771,13 @@ class PosController extends BaseController
                     'date' => Carbon::now(),
                     'client_id' => $request->client_id,
                     'warehouse_id' => $request->warehouse_id,
-                    'tax_rate' => $request->tax_rate,
-                    'TaxNet' => $request->TaxNet,
-                    'discount' => $request->discount,
+                    'tax_rate' => is_numeric($request->tax_rate) ? $request->tax_rate : 0,
+                    'TaxNet' => is_numeric($request->TaxNet) ? $request->TaxNet : 0,
+                    'discount' => is_numeric($request->discount) ? $request->discount : 0,
                     // Ensure discount_Method is saved correctly: '1' for percentage, '2' for fixed
                     'discount_Method' => $request->has('discount_Method') ? (string) $request->discount_Method : '2',
-                    'shipping' => $request->shipping,
-                    'GrandTotal' => $request->GrandTotal,
+                    'shipping' => is_numeric($request->shipping) ? $request->shipping : 0,
+                    'GrandTotal' => is_numeric($request->GrandTotal) ? $request->GrandTotal : 0,
                     'user_id' => Auth::user()->id,
                 ]);
 
@@ -795,7 +795,7 @@ class PosController extends BaseController
                         'product_variant_id' => $value['product_variant_id'],
                         'total' => $value['subtotal'],
                         'price' => $value['Unit_price'],
-                        'TaxNet' => $value['tax_percent'],
+                        'tax_net' => $value['tax_percent'],
                         'tax_method' => $value['tax_method'],
                         'discount' => $value['discount'],
                         'discount_method' => $value['discount_Method'],
@@ -812,13 +812,13 @@ class PosController extends BaseController
                 $order->Ref = $this->getNumberOrderDraft();
                 $order->client_id = $request->client_id;
                 $order->warehouse_id = $request->warehouse_id;
-                $order->tax_rate = $request->tax_rate;
-                $order->TaxNet = $request->TaxNet;
-                $order->discount = $request->discount;
+                $order->tax_rate = is_numeric($request->tax_rate) ? $request->tax_rate : 0;
+                $order->TaxNet = is_numeric($request->TaxNet) ? $request->TaxNet : 0;
+                $order->discount = is_numeric($request->discount) ? $request->discount : 0;
                 // Ensure discount_Method is saved correctly: '1' for percentage, '2' for fixed
                 $order->discount_Method = $request->has('discount_Method') ? (string) $request->discount_Method : '2';
-                $order->shipping = $request->shipping;
-                $order->GrandTotal = $request->GrandTotal;
+                $order->shipping = is_numeric($request->shipping) ? $request->shipping : 0;
+                $order->GrandTotal = is_numeric($request->GrandTotal) ? $request->GrandTotal : 0;
                 $order->user_id = Auth::user()->id;
                 $order->save();
 
@@ -834,7 +834,7 @@ class PosController extends BaseController
                         'product_variant_id' => $value['product_variant_id'],
                         'total' => $value['subtotal'],
                         'price' => $value['Unit_price'],
-                        'TaxNet' => $value['tax_percent'],
+                        'tax_net' => $value['tax_percent'],
                         'tax_method' => $value['tax_method'],
                         'discount' => $value['discount'],
                         'discount_method' => $value['discount_Method'],
@@ -910,13 +910,13 @@ class PosController extends BaseController
                 $order->Ref = app('App\Http\Controllers\SalesController')->getNumberOrder();
                 $order->client_id = $request->client_id;
                 $order->warehouse_id = $request->warehouse_id;
-                $order->tax_rate = $request->tax_rate;
-                $order->TaxNet = $request->TaxNet;
-                $order->discount = $request->discount;
+                $order->tax_rate = is_numeric($request->tax_rate) ? $request->tax_rate : 0;
+                $order->TaxNet = is_numeric($request->TaxNet) ? $request->TaxNet : 0;
+                $order->discount = is_numeric($request->discount) ? $request->discount : 0;
                 // Ensure discount_Method is saved correctly: '1' for percentage, '2' for fixed
                 $order->discount_Method = $request->has('discount_Method') ? (string) $request->discount_Method : '2';
-                $order->shipping = $request->shipping;
-                $order->GrandTotal = $request->GrandTotal;
+                $order->shipping = is_numeric($request->shipping) ? $request->shipping : 0;
+                $order->GrandTotal = is_numeric($request->GrandTotal) ? $request->GrandTotal : 0;
                 $order->notes = $request->notes;
                 $order->statut = 'completed';
                 $order->payment_statut = 'unpaid';
@@ -941,7 +941,7 @@ class PosController extends BaseController
                         'product_variant_id' => $value['product_variant_id'],
                         'total' => $value['subtotal'],
                         'price' => $value['Unit_price'],
-                        'TaxNet' => $value['tax_percent'],
+                        'tax_net' => $value['tax_percent'],
                         'tax_method' => $value['tax_method'],
                         'discount' => $value['discount'],
                         'discount_method' => $value['discount_Method'],

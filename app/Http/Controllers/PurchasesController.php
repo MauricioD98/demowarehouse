@@ -1778,12 +1778,30 @@ class PurchasesController extends BaseController
     {
         $this->authorizeForUser($request->user('api'), 'create', Purchase::class);
 
-        $data = $this->request_products_csv($request);
+        if (! $request->hasFile('products') || ! $request->file('products')->isValid()) {
+            return response()->json([
+                'msg' => __('The CSV file is required and must be valid. Please select a CSV file.'),
+                'status' => false,
+            ], 422);
+        }
 
         request()->validate([
             'supplier_id' => 'required',
             'warehouse_id' => 'required',
         ]);
+
+        $data = $this->request_products_csv($request);
+
+        // If CSV parsing returned an error response, return it to the client
+        if ($data instanceof \Illuminate\Http\JsonResponse || $data instanceof \Symfony\Component\HttpFoundation\Response) {
+            return $data;
+        }
+        if (! is_array($data) || empty($data)) {
+            return response()->json([
+                'msg' => __('The CSV could not be read or has no valid rows. Use the example format with semicolon (;) or comma (,) as separator.'),
+                'status' => false,
+            ], 422);
+        }
 
         \DB::transaction(function () use ($request, $data) {
             $order = new Purchase;
@@ -1867,105 +1885,130 @@ class PurchasesController extends BaseController
     // import Products
     public function request_products_csv(Request $request)
     {
-
         ini_set('max_execution_time', 2000);
 
         $file = $request->file('products');
-        $ext = pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION);
-        if ($ext != 'csv') {
+        $ext = strtolower(pathinfo($file->getClientOriginalName(), PATHINFO_EXTENSION));
+        if ($ext !== 'csv') {
             return response()->json([
-                'msg' => 'must be in csv format',
+                'msg' => __('The file must be in CSV format (.csv).'),
                 'status' => false,
-            ]);
-        } else {
-            // Read the CSV file
-            $data = [];
-            $rowcount = 0;
-            if (($handle = fopen($file->getPathname(), 'r')) !== false) {
-                $max_line_length = defined('MAX_LINE_LENGTH') ? MAX_LINE_LENGTH : 10000;
-                $header = fgetcsv($handle, $max_line_length, ';'); // Use semicolon as the delimiter
-
-                // Process the header row
-                $escapedHeader = [];
-                foreach ($header as $key => $value) {
-                    $lheader = strtolower($value);
-                    $escapedItem = preg_replace('/[^a-z]/', '', $lheader);
-                    $escapedHeader[] = $escapedItem;
-                }
-
-                $header_colcount = count($header);
-                while (($row = fgetcsv($handle, $max_line_length, ';')) !== false) { // Use semicolon as the delimiter
-                    $row_colcount = count($row);
-                    if ($row_colcount == $header_colcount) {
-                        $entry = array_combine($escapedHeader, $row);
-                        $data[] = $entry;
-                    } else {
-                        return null;
-                    }
-                    $rowcount++;
-                }
-                fclose($handle);
-            } else {
-                return null;
-            }
-
-            // Clean the data
-            $cleanedData = [];
-            foreach ($data as $row) {
-                $cleanedRow = [];
-                foreach ($row as $key => $value) {
-                    $cleanedKey = trim($key);
-                    $cleanedRow[$cleanedKey] = $value;
-                }
-                $cleanedData[] = $cleanedRow;
-            }
-
-            // Check for duplicate productcode in CSV
-            $productCodes = array_column($cleanedData, 'productcode');
-            if (count($productCodes) !== count(array_unique($productCodes))) {
-                return response()->json([
-                    'msg' => 'Duplicate product code found in CSV file',
-                    'status' => false,
-                ]);
-            }
-
-            // Validate productcode existence in the database
-            $missingProductCodes = [];
-            foreach ($productCodes as $code) {
-                if (! Product::where('code', $code)->exists()) {
-                    $missingProductCodes[] = $code;
-                }
-            }
-
-            if (! empty($missingProductCodes)) {
-                return response()->json([
-                    'msg' => 'The following product codes do not exist in the database: '.implode(', ', $missingProductCodes),
-                    'status' => false,
-                ]);
-            }
-
-            // Define validation rules
-            $rules = [];
-            foreach ($cleanedData as $index => $row) {
-                $rules[$index.'.productcode'] = 'required';
-                $rules[$index.'.qty'] = 'required|numeric';
-            }
-
-            // Validate the data
-            $validator = validator()->make($cleanedData, $rules);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'msg' => 'Validation failed',
-                    'errors' => $validator->errors(),
-                    'status' => false,
-                ]);
-            }
-
-            // Return the cleaned data
-            return $cleanedData;
-
+            ], 422);
         }
+
+        $data = [];
+        $rowcount = 0;
+        $path = $file->getPathname();
+        $handle = @fopen($path, 'r');
+        if ($handle === false) {
+            return response()->json([
+                'msg' => __('Could not open the CSV file. Check that the file is not corrupted.'),
+                'status' => false,
+            ], 422);
+        }
+
+        $max_line_length = defined('MAX_LINE_LENGTH') ? MAX_LINE_LENGTH : 10000;
+        $firstLine = fgets($handle);
+        rewind($handle);
+        $delimiter = (strpos($firstLine, ';') !== false) ? ';' : ',';
+        $header = fgetcsv($handle, $max_line_length, $delimiter);
+
+        if ($header === false || empty(array_filter($header))) {
+            fclose($handle);
+            return response()->json([
+                'msg' => __('The CSV file appears empty or invalid. Use the example format: productcode;qty or productcode,qty'),
+                'status' => false,
+            ], 422);
+        }
+
+        // Strip BOM from first header cell if present (Excel UTF-8)
+        $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
+
+        $escapedHeader = [];
+        foreach ($header as $key => $value) {
+            $lheader = strtolower(trim($value));
+            $escapedItem = preg_replace('/[^a-z]/', '', $lheader);
+            $escapedHeader[] = $escapedItem;
+        }
+
+        $header_colcount = count($header);
+        while (($row = fgetcsv($handle, $max_line_length, $delimiter)) !== false) {
+            $row_colcount = count($row);
+            if ($row_colcount == $header_colcount) {
+                $entry = array_combine($escapedHeader, $row);
+                $data[] = $entry;
+            } else {
+                fclose($handle);
+                return response()->json([
+                    'msg' => __('Row :row has an incorrect number of columns. Use the same separator (; or ,) in all rows.', ['row' => $rowcount + 2]),
+                    'status' => false,
+                ], 422);
+            }
+            $rowcount++;
+        }
+        fclose($handle);
+
+        if (empty($data)) {
+            return response()->json([
+                'msg' => __('The CSV has a header but no data rows. Add at least one row with productcode and qty.'),
+                'status' => false,
+            ], 422);
+        }
+
+        // Clean the data
+        $cleanedData = [];
+        foreach ($data as $row) {
+            $cleanedRow = [];
+            foreach ($row as $key => $value) {
+                $cleanedKey = trim($key);
+                $cleanedRow[$cleanedKey] = $value;
+            }
+            $cleanedData[] = $cleanedRow;
+        }
+
+        // Check for duplicate productcode in CSV
+        $productCodes = array_column($cleanedData, 'productcode');
+        if (count($productCodes) !== count(array_unique($productCodes))) {
+            return response()->json([
+                'msg' => __('Duplicate product code found in CSV file'),
+                'status' => false,
+            ], 422);
+        }
+
+        // Validate productcode existence in the database
+        $missingProductCodes = [];
+        foreach ($productCodes as $code) {
+            if (! Product::where('code', trim($code))->exists()) {
+                $missingProductCodes[] = $code;
+            }
+        }
+
+        if (! empty($missingProductCodes)) {
+            return response()->json([
+                'msg' => __('The following product codes do not exist in the database: :codes', ['codes' => implode(', ', $missingProductCodes)]),
+                'status' => false,
+            ], 422);
+        }
+
+        // Define validation rules
+        $rules = [];
+        foreach ($cleanedData as $index => $row) {
+            $rules[$index.'.productcode'] = 'required';
+            $rules[$index.'.qty'] = 'required|numeric';
+        }
+
+        // Validate the data
+        $validator = validator()->make($cleanedData, $rules);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'msg' => __('Validation failed. Check that each row has productcode and a numeric qty.'),
+                'errors' => $validator->errors(),
+                'status' => false,
+            ], 422);
+        }
+
+        return $cleanedData;
     }
 
     // ------------- Get Purchase Documents ----------\\

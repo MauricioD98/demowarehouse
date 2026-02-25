@@ -1926,9 +1926,9 @@ class ReportController extends BaseController
                 DB::raw('clients.phone as phone'),
                 DB::raw('clients.email as email'),
                 DB::raw('count(*) as total_sales'),
-                DB::raw('sum(GrandTotal) as total'),
+                DB::raw('sum(sales."GrandTotal") as total'),
             )
-            ->groupBy('clients.name');
+            ->groupBy('clients.name', 'clients.phone', 'clients.email');
 
         $customers = $customers_data->offset($offSet)
             ->limit($perPage)
