@@ -14,6 +14,7 @@ return [
 'Close Register' => 'Close Register',
 'RegisterOpened' => 'Register opened successfully',
 'RegisterClosed' => 'Register closed successfully',
+'Debe_abrir_caja_para_ventas' => 'You must open the cash register before making sales',
 'Draft_Created_successfully' => 'Draft Created successfully',
 'Draft_Sale_Deleted' => 'Draft Sale Deleted',
 'Inventory_Valuation_Based_on_Average_Cost' => 'Inventory Valuation Based on Average Cost',

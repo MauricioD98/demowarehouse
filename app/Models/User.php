@@ -126,6 +126,16 @@ class User extends Authenticatable
         return $this->belongsToMany('App\Models\Warehouse');
     }
 
+    public function listCash()
+    {
+        return $this->belongsToMany(Cash::class, 'cash_user', 'user_id', 'cash_id');
+    }
+
+    public function cash_user()
+    {
+        return $this->hasMany(\App\Models\CashUser::class, 'user_id');
+    }
+
     /**
      * Check if user has record_view permission (user-level boolean with backward compatibility)
      *

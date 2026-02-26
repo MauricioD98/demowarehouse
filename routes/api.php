@@ -392,6 +392,45 @@ Route::middleware(['auth:api', 'Is_Active', 'request.safety', 'token.timeout'])-
     Route::post('cash-registers/cash-move', 'CashRegisterController@cashInOut');
     Route::get('report/cash_registers', 'CashRegisterController@report');
 
+    // ---------------------- Cash Session (caja - apertura/cierre) ----------------------\\
+    Route::get('cash-session/check', 'CashSessionController@checkCashSession');
+    Route::get('cash-session/status/{cashId}', 'CashSessionController@checkCashStatus');
+    Route::post('cash-session/save', 'CashSessionController@saveCashToSession');
+    Route::get('cash-session/warehouses', 'CashSessionController@getWarehousesForCash');
+    Route::get('cash-session/cashs', 'CashSessionController@getCashsByWarehouse');
+
+    // Cash closing report
+    Route::get('cash_closing/report', 'CashClosingController@report');
+    Route::get('report_cash_closing', 'CashClosingController@index');
+    Route::get('report_cash_closing/detail/{id}', 'CashClosingController@reportDetail');
+    Route::post('cash_closing', 'CashClosingController@store');
+
+    // Cash management (CRUD)
+    Route::get('cash', 'CashController@index');
+    Route::get('cash/warehouse/{warehouse_id}', 'CashController@getCashs');
+    Route::post('cash', 'CashController@store');
+    Route::put('cash/{cash}', 'CashController@update');
+    Route::delete('cash/{cash}', 'CashController@destroy');
+
+    Route::get('cash_user', 'CashUserController@index');
+    Route::get('cash_user/warehouses_for_user', 'CashUserController@warehousesForUser');
+    Route::get('cash_users', 'CashUserController@getCashUsers');
+    Route::post('cash_user', 'CashUserController@store');
+    Route::delete('cash_user/{cash_user}', 'CashUserController@destroy');
+
+    Route::get('type_cash_inflow/get_list', 'TypeCashInflowController@getList');
+    Route::get('type_cash_outflow/get_list', 'TypeCashOutflowController@getList');
+
+    Route::get('cash_inflow', 'CashInflowController@index');
+    Route::post('cash_inflow', 'CashInflowController@store');
+    Route::put('cash_inflow/{id}', 'CashInflowController@update');
+    Route::delete('cash_inflow/{id}', 'CashInflowController@destroy');
+
+    Route::get('cash_outflow', 'CashOutflowController@index');
+    Route::post('cash_outflow', 'CashOutflowController@store');
+    Route::put('cash_outflow/{id}', 'CashOutflowController@update');
+    Route::delete('cash_outflow/{id}', 'CashOutflowController@destroy');
+
     // ------------------------------- Project -----------------------\\
     // ----------------------------------------------------------------\\
 

@@ -139,6 +139,12 @@ class PaymentSalesController extends BaseController
     {
         $this->authorizeForUser($request->user('api'), 'create', PaymentSale::class);
 
+        try {
+            require_cash_opened_for_sale();
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
         \DB::transaction(function () use ($request) {
             $helpers = new helpers;
             $user = Auth::user();
@@ -327,10 +333,6 @@ class PaymentSalesController extends BaseController
                 $payment_statut = 'unpaid';
             }
 
-            PaymentSale::whereId($id)->update([
-                'deleted_at' => Carbon::now(),
-            ]);
-
             $account = Account::where('id', $payment->account_id)->exists();
 
             if ($account) {
@@ -345,6 +347,8 @@ class PaymentSalesController extends BaseController
                 'paid_amount' => $total_paid,
                 'payment_statut' => $payment_statut,
             ]);
+
+            $payment->delete();
 
         }, 10);
 

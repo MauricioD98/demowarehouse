@@ -90,6 +90,12 @@ class PosController extends BaseController
         }
 
         try {
+            require_cash_opened_for_sale();
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+
+        try {
             $sale = \DB::transaction(function () use ($request, $totalPaid, $saleUuid) {
                 $helpers = new helpers;
                 $user = Auth::user();

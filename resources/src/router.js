@@ -983,6 +983,58 @@ const baseRoutes = [
                 ]
             },
 
+            // Cash (Caja)
+            {
+                path: "/app/cash",
+                component: () =>
+                    import(
+                        /* webpackChunkName: "cash" */ "./views/app/pages/cash/index.vue"
+                    ),
+                redirect: "/app/cash/cash",
+                children: [
+                    {
+                        name: "cash_list",
+                        path: "cash",
+                        component: () =>
+                            import(
+                                /* webpackChunkName: "cash_cash" */ "./views/app/pages/cash/cash.vue"
+                            )
+                    },
+                    {
+                        name: "cash_inflow",
+                        path: "cash_inflow",
+                        component: () =>
+                            import(
+                                /* webpackChunkName: "cash_inflow" */ "./views/app/pages/cash/cash_inflow.vue"
+                            )
+                    },
+                    {
+                        name: "cash_outflow",
+                        path: "cash_outflow",
+                        component: () =>
+                            import(
+                                /* webpackChunkName: "cash_outflow" */ "./views/app/pages/cash/cash_outflow.vue"
+                            )
+                    },
+                    {
+                        name: "cash_user",
+                        path: "cash_user",
+                        component: () =>
+                            import(
+                                /* webpackChunkName: "cash_user" */ "./views/app/pages/cash/cash_user.vue"
+                            )
+                    },
+                    {
+                        name: "report_cash_closing",
+                        path: "report_cash_closing",
+                        component: () =>
+                            import(
+                                /* webpackChunkName: "report_cash_closing" */ "./views/app/pages/cash/report_cash_closing.vue"
+                            )
+                    }
+                ]
+            },
+
             // Hrm
             {
                 path: "/app/hrm",
@@ -2152,6 +2204,12 @@ const baseRoutes = [
                         path: "cash-registers",
                         component: () =>
                             import(/* webpackChunkName: "cash_register_report" */ "./views/app/pages/reports/Cash_Register_Report")
+                    },
+                    {
+                        name: "cash_closing",
+                        path: "cash_closing",
+                        component: () =>
+                            import(/* webpackChunkName: "cash_closing" */ "./views/app/pages/reports/cash_closing")
                     },
                     {
                         name: "attendance_report",

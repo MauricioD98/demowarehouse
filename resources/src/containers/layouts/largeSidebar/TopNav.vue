@@ -1,4 +1,5 @@
 <template>
+  <div>
   <div class="main-header">
     <div class="logo">
        <router-link to="/app/dashboard">
@@ -16,6 +17,14 @@
     <div style="margin: auto"></div>
 
     <div class="header-part-right nav-right">
+      <!-- Cash Closing Link -->
+      <router-link
+        v-if="showCashClosingLink"
+        class="btn btn-outline-primary btn-sm btn-rounded"
+        to="/app/reports/cash_closing"
+      >
+        <span class="ul-btn__text ml-1">{{ $t('CashClosing') || 'Cierre de Caja' }}</span>
+      </router-link>
       <!-- POS Link -->
       <router-link 
         v-if="currentUserPermissions && currentUserPermissions.includes('Pos_view')"
@@ -147,7 +156,40 @@
     </div>
   </div>
 
-  <!-- header top menu end -->
+  <!-- Cash Selection Modal -->
+  <b-modal id="cash-selection-modal" :title="$t('SelectCash') || 'Seleccionar Caja'" hide-footer>
+    <b-form-group :label="$t('warehouse') || 'Almacén'">
+      <v-select
+        v-model="selectedWarehouse"
+        :options="warehouses"
+        label="name"
+        :reduce="w => w"
+        :placeholder="$t('Choose_Warehouse') || 'Seleccione almacén'"
+        @input="onWarehouseChange"
+      />
+    </b-form-group>
+    <b-form-group :label="$t('Cash') || 'Caja'">
+      <v-select
+        v-model="selectedCash"
+        :options="cashs"
+        label="name"
+        :reduce="c => c"
+        :placeholder="$t('Choose_Cash') || 'Seleccione caja'"
+        @input="checkCashStatus"
+      />
+    </b-form-group>
+    <b-form-group v-if="showOpeningAmount" :label="$t('OpeningAmount') || 'Monto de Apertura'">
+      <b-form-input
+        v-model.number="openingAmount"
+        type="number"
+        :placeholder="$t('Enter_opening_amount') || 'Ingrese el monto de apertura'"
+        min="0"
+        step="0.01"
+      />
+    </b-form-group>
+    <b-button variant="primary" @click="onCashSelect">{{ $t('Select') || 'Seleccionar' }}</b-button>
+  </b-modal>
+  </div>
 </template>
 <script>
 import Util from "./../../../utils";
@@ -161,16 +203,19 @@ export default {
   mixins: [clickaway],
  
   data() {
-  
     return {
-     
       isDisplay: true,
       isStyle: true,
       isSearchOpen: false,
       isMouseOnMegaMenu: true,
       isMegaMenuOpen: false,
-      is_Load:false,
-     
+      is_Load: false,
+      warehouses: [],
+      cashs: [],
+      selectedWarehouse: null,
+      selectedCash: null,
+      openingAmount: 0,
+      showOpeningAmount: false,
     };
   },
  
@@ -185,7 +230,10 @@ export default {
       "getAvailableLanguages"
     ]),
     ...mapGetters("config", ["getThemeMode"]),
-
+    showCashClosingLink() {
+      const perms = this.currentUserPermissions || [];
+      return perms.includes('Pos_view') || perms.includes('cash_register_report') || perms.includes('report_cash_closing');
+    },
   },
 
   methods: {
@@ -232,6 +280,102 @@ export default {
       this.isSearchOpen = !this.isSearchOpen;
     },
 
+    async loadWarehouses() {
+      try {
+        const { data } = await axios.get('cash-session/warehouses');
+        this.warehouses = data.warehouses || [];
+      } catch (e) {
+        this.warehouses = [];
+      }
+    },
+    async onWarehouseChange() {
+      this.selectedCash = null;
+      this.cashs = [];
+      this.showOpeningAmount = false;
+      if (!this.selectedWarehouse) return;
+      try {
+        const { data } = await axios.get('cash-session/cashs', { params: { warehouse_id: this.selectedWarehouse.id } });
+        this.cashs = data.cashs || [];
+        if (this.cashs.length === 1) this.selectedCash = this.cashs[0];
+      } catch (e) {
+        this.cashs = [];
+      }
+    },
+    async onCashSelect() {
+      if (!this.selectedCash || !this.selectedWarehouse) {
+        this.$bvToast.toast(this.$t('Please_select_cash_and_warehouse') || 'Seleccione caja y almacén', {
+          title: this.$t('Error'),
+          variant: 'danger',
+          solid: true,
+        });
+        return;
+      }
+      try {
+        const payload = {
+          cash: this.selectedCash.id,
+          warehouse_id: this.selectedWarehouse.id,
+        };
+        if (this.showOpeningAmount) {
+          const amount = parseFloat(this.openingAmount);
+          payload.openingAmount = isNaN(amount) || amount < 0 ? 0 : amount;
+        }
+        await axios.post('cash-session/save', payload);
+        this.$bvToast.toast(this.$t('Cash_started') || 'Caja iniciada', {
+          title: this.$t('Success'),
+          variant: 'success',
+          solid: true,
+        });
+        this.$bvModal.hide('cash-selection-modal');
+      } catch (e) {
+        this.$bvToast.toast(e.response?.data?.message || this.$t('InvalidData'), {
+          title: this.$t('Failed'),
+          variant: 'danger',
+          solid: true,
+        });
+      }
+    },
+    async checkCashSession() {
+      try {
+        const { data } = await axios.get('cash-session/check');
+        if (data && !data.hasCache) {
+          const hasCashAssigned = data.cashs && data.cashs.length > 0;
+          await this.loadWarehouses();
+          if (hasCashAssigned || (this.warehouses && this.warehouses.length > 0)) {
+            if (this.warehouses && this.warehouses.length === 1) {
+              this.selectedWarehouse = this.warehouses[0];
+              await this.onWarehouseChange();
+            }
+            this.$bvModal.show('cash-selection-modal');
+          }
+        }
+      } catch (e) {
+        const res = e.response?.data;
+        if (res?.cashs) this.cashs = res.cashs;
+        await this.loadWarehouses();
+        if (this.warehouses && this.warehouses.length > 0) {
+          if (this.warehouses.length === 1) {
+            this.selectedWarehouse = this.warehouses[0];
+            await this.onWarehouseChange();
+          }
+          this.$bvModal.show('cash-selection-modal');
+        }
+        this.$bvToast.toast(this.$t('Cash_not_initialized') || 'Caja no inicializada', {
+          title: this.$t('Error'),
+          variant: 'danger',
+          solid: true,
+        });
+      }
+    },
+    async checkCashStatus() {
+      if (!this.selectedCash || !this.selectedWarehouse) return;
+      try {
+        const params = { warehouse_id: this.selectedWarehouse.id };
+        const { data } = await axios.get(`cash-session/status/${this.selectedCash.id}`, { params });
+        this.showOpeningAmount = !data.isOpen;
+      } catch (e) {
+        this.showOpeningAmount = true;
+      }
+    },
     sideBarToggle(el) {
       if (
         this.getSideBarToggleProperties.isSideNavOpen &&
@@ -265,12 +409,12 @@ export default {
   },
 
   mounted() {
-    // Apply dark theme class on mount if dark mode is enabled
     if (this.getThemeMode.dark) {
       document.body.classList.add('dark-theme');
     } else {
       document.body.classList.remove('dark-theme');
     }
+    this.checkCashSession();
   }
 };
 </script>

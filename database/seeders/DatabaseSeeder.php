@@ -26,6 +26,8 @@ class DatabaseSeeder extends Seeder
             PermissionRoleSeeder::class,
             Warehouse::class,
             StoreSettingSeeder::class,
+            CashTypesSeeder::class,
+            CashDefaultSeeder::class,
         ]);
 
     }

@@ -488,6 +488,55 @@
             </ul>
           </li>
 
+          <!-- Cash (Caja) -->
+          <li
+            v-show="currentUserPermissions && (
+              currentUserPermissions.includes('Sales_view') ||
+              currentUserPermissions.includes('Pos_view') ||
+              currentUserPermissions.includes('report_cash_closing')
+            )"
+            :class="{ active: isActiveRoute('cash'), 'has-submenu': true, open: openMenus.includes('cash') }"
+            class="nav-item"
+          >
+            <a href="#" @click.prevent="toggleSubmenu('cash')" class="nav-link">
+              <i class="nav-icon i-Dollar"></i>
+              <span class="nav-text" v-if="!isCollapsed">{{ $t('Cashs') || 'Caja' }}</span>
+              <i class="submenu-arrow i-Arrow-Down" v-if="!isCollapsed"></i>
+            </a>
+            <ul class="submenu" v-if="openMenus.includes('cash') && !isCollapsed">
+              <li class="submenu-item">
+                <router-link to="/app/cash/cash" class="submenu-link">
+                  <i class="submenu-icon i-Add"></i>
+                  <span>{{ $t('Create_Cash') || 'Crear Caja' }}</span>
+                </router-link>
+              </li>
+              <li class="submenu-item">
+                <router-link to="/app/cash/cash_inflow" class="submenu-link">
+                  <i class="submenu-icon i-Download"></i>
+                  <span>{{ $t('Cash_inflows') || 'Entradas de efectivo' }}</span>
+                </router-link>
+              </li>
+              <li class="submenu-item">
+                <router-link to="/app/cash/cash_outflow" class="submenu-link">
+                  <i class="submenu-icon i-Upload"></i>
+                  <span>{{ $t('Cash_outflows') || 'Egresos de efectivo' }}</span>
+                </router-link>
+              </li>
+              <li class="submenu-item">
+                <router-link to="/app/cash/cash_user" class="submenu-link">
+                  <i class="submenu-icon i-User"></i>
+                  <span>{{ $t('CashUser') || 'Usuario caja' }}</span>
+                </router-link>
+              </li>
+              <li class="submenu-item">
+                <router-link to="/app/cash/report_cash_closing" class="submenu-link">
+                  <i class="submenu-icon i-File-Clipboard"></i>
+                  <span>{{ $t('cash_report') || 'Informe de caja' }}</span>
+                </router-link>
+              </li>
+            </ul>
+          </li>
+
           <!-- Damages -->
           <li
             v-show="currentUserPermissions && (
@@ -1083,6 +1132,12 @@
                   <span>{{ $t('Cash_Register_Report') }}</span>
                 </router-link>
               </li>
+              <li class="submenu-item" v-if="showCashClosingLink">
+                <router-link :to="{ name: 'cash_closing' }" class="submenu-link">
+                  <i class="submenu-icon i-Lock"></i>
+                  <span>{{ $t('CashClosing') || 'Cierre de Caja' }}</span>
+                </router-link>
+              </li>
               <li class="submenu-item" v-if="currentUserPermissions && currentUserPermissions.includes('inventory_valuation')">
                 <router-link to="/app/reports/inventory_valuation_summary" class="submenu-link">
                   <i class="submenu-icon i-Pie-Chart"></i>
@@ -1365,7 +1420,10 @@ export default {
 
   computed: {
     ...mapGetters(["currentUserPermissions", "currentUser"]),
-
+    showCashClosingLink() {
+      const p = this.currentUserPermissions || [];
+      return p.includes('Pos_view') || p.includes('cash_register_report');
+    },
       hasReportsPermission() {
       if (!this.currentUserPermissions) return false;
       const reportPermissions = [

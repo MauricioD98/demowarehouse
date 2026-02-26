@@ -194,13 +194,18 @@ class SalesController extends BaseController
 
     public function store(Request $request)
     {
-
         $this->authorizeForUser($request->user('api'), 'create', Sale::class);
 
         request()->validate([
             'client_id' => 'required',
             'warehouse_id' => 'required',
         ]);
+
+        try {
+            require_cash_opened_for_sale();
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
 
         $sale = \DB::transaction(function () use ($request) {
             $helpers = new helpers;

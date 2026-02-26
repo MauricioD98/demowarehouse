@@ -54,7 +54,7 @@
             "Database\\Seeders\\": "database/seeders/",
             "Database\\Factories\\": "database/factories/"
         },
-        "files": ["app/Support/store_settings.php"]
+        "files": ["app/Support/store_settings.php", "app/Helpers/cash_helpers.php"]
     },
     "autoload-dev": {
         "psr-4": {

@@ -16,4 +16,9 @@ class Warehouse extends Model
     {
         return $this->belongsToMany('App\Models\User');
     }
+
+    public function cashs()
+    {
+        return $this->hasMany(Cash::class);
+    }
 }
