@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan migrate:status:*)",
+      "Bash(php artisan:*)",
+      "Bash(ls:*)",
+      "Bash(psql:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(rm:*)",
+      "Bash(php -r:*)",
+      "Bash(touch:*)",
+      "Bash(curl:*)",
+      "Bash(php -l:*)",
+      "Bash(npm run prod:*)"
+    ]
+  }
+}
